@@ -503,7 +503,8 @@ const sleepHistoryGrouped = computed(() => {
   return Object.values(byDate).sort((a, b) => b.date.localeCompare(a.date))
 })
 const showSleepHistory = ref(false)
-const sleepForm = reactive({ sleepType: 'sleep', quality: 3, hours: null as number | null, date: new Date().toISOString().split('T')[0] })
+const todayStr = import.meta.client ? new Date().toISOString().split('T')[0] : '2026-04-02'
+const sleepForm = reactive({ sleepType: 'sleep', quality: 3, hours: null as number | null, date: todayStr })
 async function logSleep() {
   await $fetch('/api/sleep', { method: 'POST', body: sleepForm })
   sleepForm.sleepType = 'sleep'; sleepForm.quality = 3; sleepForm.hours = null; sleepForm.date = new Date().toISOString().split('T')[0]
@@ -522,10 +523,17 @@ const sorenessDirty = ref(false)
 const sorenessSubmitting = ref(false)
 const showSorenessHistory = ref(false)
 
-async function loadTodaySoreness() {
-  try { const data = await $fetch<Record<string, { id: number; severity: number }>>('/api/soreness'); for (const p of bodyParts) sorenessDraft.value[p.value] = data?.[p.value]?.severity || 0 } catch {}
+const sorenessLoaded = ref(false)
+
+if (import.meta.client) {
+  onMounted(async () => {
+    try {
+      const data = await $fetch<Record<string, { id: number; severity: number }>>('/api/soreness')
+      for (const p of bodyParts) sorenessDraft.value[p.value] = data?.[p.value]?.severity || 0
+    } catch {}
+    sorenessLoaded.value = true
+  })
 }
-loadTodaySoreness()
 watch(sorenessDraft, () => { sorenessDirty.value = true }, { deep: true })
 
 function draftButtonStyle(partValue: string, severity: number) {
@@ -605,7 +613,7 @@ async function deleteBreathing(id: number) { await $fetch(`/api/breathing?id=${i
 // NUTRITION
 const showNutritionHistory = ref(false)
 const { data: nutritionData, refresh: refreshNutrition } = useFetch<any[]>('/api/nutrition')
-const todayMeals = computed(() => { const t = new Date().toISOString().split('T')[0]; return (nutritionData.value || []).filter((m: any) => m.date === t) })
+const todayMeals = computed(() => { const t = import.meta.client ? new Date().toISOString().split('T')[0] : todayStr; return (nutritionData.value || []).filter((m: any) => m.date === t) })
 const todayProtein = computed(() => todayMeals.value.reduce((s: number, m: any) => s + (m.protein || 0), 0))
 const nutritionHistoryGrouped = computed(() => {
   const byDate: Record<string, { date: string; meals: any[]; totalProtein: number }> = {}
