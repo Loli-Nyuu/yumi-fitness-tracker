@@ -30,7 +30,36 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event)
     const entryDate = body.date || today
 
-    // Find latest entry for this body part today
+    // Batch mode: { entries: [{ bodyPart, severity }, ...] }
+    if (Array.isArray(body.entries)) {
+      // Delete all existing entries for today
+      db.delete(sorenessLog).where(eq(sorenessLog.date, entryDate)).run()
+
+      // Insert all new entries (skip severity 0)
+      for (const entry of body.entries) {
+        if (entry.severity > 0) {
+          db.insert(sorenessLog).values({
+            date: entryDate,
+            bodyPart: entry.bodyPart,
+            severity: entry.severity,
+            sessionId: body.sessionId || null,
+            notes: entry.notes || '',
+          }).run()
+        }
+      }
+
+      // Return all current entries for the day (deduplicated, same as GET)
+      const entries = db.select().from(sorenessLog).where(eq(sorenessLog.date, entryDate)).all()
+      const byPart: Record<string, { id: number; severity: number }> = {}
+      for (const entry of entries) {
+        if (!byPart[entry.bodyPart] || entry.id > byPart[entry.bodyPart].id) {
+          byPart[entry.bodyPart] = { id: entry.id, severity: entry.severity }
+        }
+      }
+      return byPart
+    }
+
+    // Single-entry mode (backward compat)
     const existing = db.select().from(sorenessLog)
       .where(and(eq(sorenessLog.date, entryDate), eq(sorenessLog.bodyPart, body.bodyPart)))
       .all()

@@ -16,6 +16,34 @@ export default defineEventHandler(async (event) => {
     const query = getQuery(event)
     const date = (query.date as string) || today
 
+    // date=all → last 30 days grouped by date with summary
+    if (date === 'all') {
+      const thirtyDaysAgo = new Date()
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+      const cutoff = thirtyDaysAgo.toISOString().split('T')[0]
+
+      const allEntries = db.select().from(fluidLog)
+        .where(eq(fluidLog.date, cutoff)) // drizzle doesn't have gte easily, use raw
+        .all()
+
+      // Actually fetch all recent and filter
+      const recent = db.select().from(fluidLog).orderBy(desc(fluidLog.date)).limit(500).all()
+
+      // Group by date
+      const byDate: Record<string, { totalMl: number; effectiveMl: number; count: number }> = {}
+      for (const entry of recent) {
+        if (entry.date < cutoff) continue
+        if (!byDate[entry.date]) byDate[entry.date] = { totalMl: 0, effectiveMl: 0, count: 0 }
+        byDate[entry.date].totalMl += entry.amountMl
+        byDate[entry.date].effectiveMl += Math.round(entry.amountMl * (HYDRATION_FACTORS[entry.type] || 0.85))
+        byDate[entry.date].count++
+      }
+
+      return Object.entries(byDate)
+        .sort((a, b) => b[0].localeCompare(a[0]))
+        .map(([date, summary]) => ({ date, ...summary }))
+    }
+
     const entries = db.select().from(fluidLog).where(eq(fluidLog.date, date)).all()
 
     const byType: Record<string, { count: number; totalMl: number; effectiveMl: number }> = {}
