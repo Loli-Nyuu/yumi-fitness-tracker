@@ -10,8 +10,23 @@
           </button>
         </div>
 
+        <!-- COUNTDOWN: Waiting to auto-start -->
+        <div v-if="!activeBreathing && countdownSeconds > 0" class="flex-1 flex flex-col items-center justify-center text-center">
+          <Icon :name="icons.breathing" class="text-5xl mb-4" style="color: var(--primary)" />
+          <h3 class="text-xl font-bold mb-1" style="color: var(--primary)">{{ selectedPattern?.name }}</h3>
+          <p class="text-sm mb-6" style="color: var(--text-muted)">{{ selectedPattern?.helps }}</p>
+
+          <p class="text-6xl font-mono font-bold mb-4" style="color: var(--primary)">{{ countdownSeconds }}</p>
+          <p class="text-sm mb-6" style="color: var(--text-muted)">Starting automatically...</p>
+
+          <button @click="cancelCountdown" class="px-6 py-2.5 rounded-xl font-medium transition-all hover:scale-105"
+            :style="{ background: 'color-mix(in srgb, var(--danger) 20%, transparent)', color: 'var(--danger)' }">
+            <Icon :name="icons.stop" /> Cancel
+          </button>
+        </div>
+
         <!-- NOT STARTED: Pattern detail -->
-        <div v-if="!activeBreathing" class="flex-1 flex flex-col items-center justify-center text-center">
+        <div v-else-if="!activeBreathing" class="flex-1 flex flex-col items-center justify-center text-center">
           <Icon :name="icons.breathing" class="text-5xl mb-4" style="color: var(--primary)" />
           <h3 class="text-xl font-bold mb-1" style="color: var(--primary)">{{ selectedPattern?.name }}</h3>
           <p class="text-sm mb-6" style="color: var(--text-muted)">{{ selectedPattern?.helps }}</p>
@@ -21,14 +36,23 @@
 
           <!-- Round presets -->
           <p class="text-xs mb-2" style="color: var(--text-muted)">Repeat for</p>
-          <div class="flex flex-wrap gap-2 mb-6 justify-center">
-            <button v-for="opt in roundOptions" :key="opt.value" @click="selectedRounds = opt.value"
+          <div class="flex flex-wrap gap-2 mb-3 justify-center">
+            <button v-for="opt in roundOptions" :key="opt.value" @click="selectedRounds = opt.value; customRounds = ''"
               class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
-              :style="selectedRounds === opt.value
+              :style="selectedRounds === opt.value && !customRounds
                 ? { background: 'var(--primary)', color: 'var(--background)' }
                 : { background: 'var(--surface-light)', color: 'var(--text-muted)' }">
               {{ opt.label }}
             </button>
+          </div>
+
+          <!-- Custom rounds input -->
+          <div class="flex items-center gap-2 mb-6">
+            <input v-model="customRounds" type="number" min="1" placeholder="Custom"
+              class="w-20 px-3 py-1.5 rounded-lg text-sm font-medium text-center"
+              style="background: var(--surface-light); color: var(--text)"
+              @input="const val = parseInt(customRounds); if (val > 0) selectedRounds = val" />
+            <span class="text-sm" style="color: var(--text-muted)">rounds</span>
           </div>
 
           <button @click="startBreathingSession"
@@ -39,7 +63,13 @@
         </div>
 
         <!-- STARTED: Visual guide -->
-        <div v-else class="flex-1 flex flex-col items-center justify-center text-center">
+        <div v-else-if="!isPaused" class="flex-1 flex flex-col items-center justify-center text-center">
+          <!-- Motivation message overlay -->
+          <div v-if="motivationMsg" class="mb-4 px-4 py-2 rounded-xl animate-bounce"
+            style="background: color-mix(in srgb, var(--primary) 20%, transparent); color: var(--primary)">
+            <p class="text-sm font-medium">{{ motivationMsg }}</p>
+          </div>
+
           <!-- Lung circle animation -->
           <div class="relative w-40 h-40 mb-6 flex items-center justify-center">
             <!-- Outer ring -->
@@ -76,11 +106,43 @@
             <span class="text-sm" style="color: var(--text-muted)">{{ formatDuration(breathElapsed) }}</span>
           </div>
 
-          <!-- Stop button -->
-          <button @click="stopBreathing"
+          <!-- Pause/Resume controls -->
+          <div class="flex gap-3 mb-4">
+            <button @click="togglePause"
+              class="px-6 py-2.5 rounded-xl font-medium transition-all hover:scale-105"
+              :style="{ background: 'color-mix(in srgb, var(--warning) 20%, transparent)', color: 'var(--warning)' }">
+              <Icon :name="icons.pause" /> {{ isPaused ? 'Resume' : 'Pause' }}
+            </button>
+            <button @click="stopBreathing"
+              class="px-6 py-2.5 rounded-xl font-medium transition-all hover:scale-105"
+              :style="{ background: 'color-mix(in srgb, var(--danger) 20%, transparent)', color: 'var(--danger)' }">
+              <Icon :name="icons.stop" /> Stop
+            </button>
+          </div>
+        </div>
+
+        <!-- PAUSED: Countdown overlay -->
+        <div v-else-if="isPaused && resumeCountdown > 0" class="flex-1 flex flex-col items-center justify-center text-center">
+          <Icon :name="icons.breathing" class="text-5xl mb-4" style="color: var(--primary)" />
+          <h3 class="text-xl font-bold mb-1" style="color: var(--primary)">Paused</h3>
+          <p class="text-6xl font-mono font-bold my-6" style="color: var(--primary)">{{ resumeCountdown }}</p>
+          <p class="text-sm mb-6" style="color: var(--text-muted)">Resuming automatically...</p>
+          <button @click="cancelCountdown(); isPaused = false"
             class="px-6 py-2.5 rounded-xl font-medium transition-all hover:scale-105"
-            :style="{ background: 'color-mix(in srgb, var(--danger) 20%, transparent)', color: 'var(--danger)' }">
-            <Icon :name="icons.stop" /> Stop
+            :style="{ background: 'var(--surface-light)', color: 'var(--text)' }">
+            <Icon :name="icons.play" /> Resume Now
+          </button>
+        </div>
+
+        <!-- PAUSED: Waiting state -->
+        <div v-else class="flex-1 flex flex-col items-center justify-center text-center">
+          <Icon :name="icons.breathing" class="text-5xl mb-4" style="color: var(--primary); opacity: 0.5" />
+          <h3 class="text-xl font-bold mb-2" style="color: var(--primary)">Paused</h3>
+          <p class="text-sm mb-6" style="color: var(--text-muted)">Take your time</p>
+          <button @click="togglePause"
+            class="px-6 py-2.5 rounded-xl font-medium transition-all hover:scale-105"
+            :style="{ background: 'var(--primary)', color: 'var(--background)' }">
+            <Icon :name="icons.play" /> Resume
           </button>
         </div>
       </div>
@@ -114,11 +176,15 @@ const {
   showBreathingPanel,
   selectedPattern,
   selectedRounds,
+  customRounds,
   activeBreathing,
   breathPhase,
   breathTimer,
   breathRounds,
   breathElapsed,
+  autoStartDelay,
+  countdownSeconds,
+  motivationMsg,
   breathCircleSize,
   breathCircleTransition,
   breathCircleBg,
@@ -129,7 +195,36 @@ const {
   closeBreathingPanel,
   startBreathingSession,
   stopBreathing,
+  cancelCountdown,
+  pauseBreathing,
+  resumeBreathing,
+  sendProgress,
 } = useBreathingPanel()
+
+// Pause state
+const isPaused = ref(false)
+const resumeCountdown = ref(0)
+let resumeInterval: ReturnType<typeof setInterval> | null = null
+
+function togglePause() {
+  if (isPaused.value) {
+    // Start resume countdown
+    resumeCountdown.value = 3
+    resumeInterval = setInterval(() => {
+      resumeCountdown.value--
+      if (resumeCountdown.value <= 0) {
+        if (resumeInterval) clearInterval(resumeInterval)
+        resumeInterval = null
+        isPaused.value = false
+        resumeBreathing()
+      }
+    }, 1000)
+  } else {
+    // Pause
+    isPaused.value = true
+    pauseBreathing()
+  }
+}
 </script>
 
 <style scoped>

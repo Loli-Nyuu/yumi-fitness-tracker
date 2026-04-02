@@ -1,12 +1,20 @@
 import { defineEventHandler, readBody } from 'h3'
-import { useNitroApp } from 'nitropack/runtime'
+import { broadcastWS } from '../../lib/ws-peers'
 
 export default defineEventHandler(async (event) => {
-  const nitroApp = useNitroApp()
   const body = await readBody(event)
   const pattern = body.pattern || null
+  
   if (pattern) {
-    nitroApp.sseBroadcast({ event: 'breathing:open', data: { pattern } })
+    broadcastWS({
+      event: 'breathing:open',
+      data: {
+        pattern,
+        rounds: body.rounds,
+        autoStartDelay: body.autoStartDelay,
+      },
+    })
   }
+  
   return { success: true, pattern }
 })

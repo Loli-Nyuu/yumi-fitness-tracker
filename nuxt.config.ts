@@ -7,7 +7,7 @@ export default defineNuxtConfig({
 
   devtools: { enabled: true },
 
-  modules: [],
+  modules: ['@vueuse/nuxt'],
 
 
   css: ['~/assets/css/main.css'],

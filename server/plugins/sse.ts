@@ -1,22 +1,5 @@
-// Nitro plugin to set up shared SSE broadcast system
-const listeners: Array<(data: string) => void> = []
-
-export default defineNitroPlugin((nitroApp) => {
-  // Expose global SSE functions
-  nitroApp.sseListeners = listeners
-  
-  nitroApp.sseBroadcast = (data: any) => {
-    const message = JSON.stringify(data)
-    for (const listener of listeners) {
-      try { listener(message) } catch {}
-    }
-  }
+// This plugin is no longer needed as SSE state is in server/lib/sse.ts
+// Keeping it as a no-op for backwards compatibility
+export default defineNitroPlugin(() => {
+  // SSE broadcast is now handled by server/lib/sse.ts
 })
-
-// Make types available
-declare module 'nitropack' {
-  interface NitroApp {
-    sseListeners: Array<(data: string) => void>
-    sseBroadcast: (data: any) => void
-  }
-}

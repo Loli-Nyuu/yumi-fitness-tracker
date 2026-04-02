@@ -1,167 +1,79 @@
 import type { Peer } from 'crossws'
+import { registerPeer, unregisterPeer } from '../lib/ws-peers'
 
-const peers = new Map<string, Peer>()
-const sessionState = new Map<number, {
-  status: 'waiting' | 'active' | 'paused' | 'completed'
-  currentExerciseIndex: number
-  timerStart: number | null
-  timerType: string | null
-  repCount: number
-  setCount: number
-}>()
-
-process.on('uncaughtException', (err: any) => {
-  if (err?.code === 'ECONNRESET' || err?.message?.includes('ECONNRESET')) {
-    console.log('[WS] Connection reset (handled)')
-    return
-  }
-  throw err
-})
-process.on('unhandledRejection', (err: any) => {
-  if (err?.code === 'ECONNRESET' || err?.message?.includes('ECONNRESET')) {
-    console.log('[WS] Connection reset (handled)')
-    return
-  }
-  throw err
-})
+export { broadcastWS } from '../lib/ws-peers'
 
 export default defineWebSocketHandler({
   open(peer) {
     console.log(`[WS] Connected: ${peer.id}`)
-    peers.set(peer.id, peer)
+    registerPeer(peer)
     peer.send(JSON.stringify({ event: 'connected', data: { peerId: peer.id } }))
   },
 
   message(peer, rawMessage) {
     let msg: any
     try {
-      msg = typeof rawMessage === 'string' ? JSON.parse(rawMessage) : rawMessage
-    } catch {
-      console.log(`[WS] Invalid message from ${peer.id}`)
+      const text = typeof rawMessage === 'string' ? rawMessage : Buffer.from(rawMessage as ArrayBuffer).toString('utf-8')
+      msg = JSON.parse(text)
+      console.log(`[WS] Raw message from ${peer.id}:`, msg?.event)
+    } catch (e) {
+      console.log(`[WS] Failed to parse message from ${peer.id}:`, e)
       return
     }
 
-    console.log(`[WS] Message from ${peer.id}:`, msg?.event)
-
     switch (msg.event) {
-      case 'session:join': {
-        const sessionId = msg.data.sessionId
-        peer.ctx = { sessionId }
-        if (!sessionState.has(sessionId)) {
-          sessionState.set(sessionId, {
-            status: 'waiting',
-            currentExerciseIndex: 0,
-            timerStart: null,
-            timerType: null,
-            repCount: 0,
-            setCount: 0,
-          })
-        }
-        broadcast({ event: 'session:joined', data: { peerId: peer.id, sessionId } }, sessionId)
+      case 'breathing:sessionStarted': {
+        console.log(`[WS] Breathing started: ${msg.data?.pattern}`)
         break
       }
 
-      case 'session:start': {
-        const sessionId = msg.data.sessionId
-        const state = sessionState.get(sessionId)
-        if (state) {
-          state.status = 'active'
-          broadcast({ event: 'session:started', data: { sessionId, startTime: Date.now() } }, sessionId)
-        }
-        break
-      }
-
-      case 'timer:start': {
-        const sessionId = peer.ctx?.sessionId
-        const state = sessionState.get(sessionId)
-        if (state) {
-          state.timerStart = Date.now()
-          state.timerType = msg.data.type
-          broadcast({ event: 'timer:started', data: { type: msg.data.type, exerciseId: msg.data.exerciseId } }, sessionId)
-        }
-        break
-      }
-
-      case 'timer:stop': {
-        const sessionId = peer.ctx?.sessionId
-        const state = sessionState.get(sessionId)
-        if (state && state.timerStart) {
-          const elapsed = Math.floor((Date.now() - state.timerStart) / 1000)
-          broadcast({ event: 'timer:stopped', data: { elapsed, type: state.timerType } }, sessionId)
-          state.timerStart = null
-          state.timerType = null
+      case 'breathing:roundProgress': {
+        const { currentRound, totalRounds } = msg.data || {}
+        console.log(`[WS] Breathing round: ${currentRound}/${totalRounds}`)
+        
+        if (totalRounds > 0) {
+          // Percentage-based motivation for finite rounds
+          const pct = currentRound / totalRounds
+          let motivationalMsg = ''
+          if (pct >= 0.5 && pct < 0.55) motivationalMsg = "You're halfway there! Keep going! 💪"
+          else if (pct >= 0.75 && pct < 0.8) motivationalMsg = "Three quarters done! You're crushing it! 🔥"
+          else if (pct >= 0.9 && pct < 0.95) motivationalMsg = "Almost there! Last round coming up! 🍑"
+          else if (currentRound === totalRounds) motivationalMsg = "THIS IS THE LAST ONE! FINISH STRONG! 🎯"
+          
+          if (motivationalMsg) {
+            peer.send(JSON.stringify({ event: 'breathing:motivation', data: { message: motivationalMsg } }))
+          }
+        } else {
+          // Milestone-based motivation for endless mode
+          let motivationalMsg = ''
+          if (currentRound === 5) motivationalMsg = "5 rounds done! You're building stamina! 💪"
+          else if (currentRound === 10) motivationalMsg = "10 rounds! You're on fire! 🔥"
+          else if (currentRound === 15) motivationalMsg = "15 rounds! Absolute legend! 🍑"
+          else if (currentRound === 20) motivationalMsg = "20 rounds! You're unstoppable! 🎯"
+          else if (currentRound > 0 && currentRound % 10 === 0) motivationalMsg = `${currentRound} rounds! Keep going, champ! ✨`
+          
+          if (motivationalMsg) {
+            peer.send(JSON.stringify({ event: 'breathing:motivation', data: { message: motivationalMsg } }))
+          }
         }
         break
       }
 
-      case 'rep:complete': {
-        const sessionId = peer.ctx?.sessionId
-        const state = sessionState.get(sessionId)
-        if (state) {
-          state.repCount++
-          broadcast({ event: 'rep:count', data: { current: state.repCount, target: msg.data.target } }, sessionId)
-        }
+      case 'breathing:sessionCompleted': {
+        console.log(`[WS] Breathing completed: ${msg.data?.pattern}`)
         break
       }
 
-      case 'set:complete': {
-        const sessionId = peer.ctx?.sessionId
-        const state = sessionState.get(sessionId)
-        if (state) {
-          state.setCount++
-          state.repCount = 0
-          broadcast({ event: 'set:complete', data: { set: state.setCount, total: msg.data.total } }, sessionId)
-        }
+      case 'breathing:paused': {
+        console.log(`[WS] Breathing PAUSED by user`)
+        // Send confirmation back to client
+        peer.send(JSON.stringify({ event: 'breathing:pauseConfirmed', data: { timestamp: Date.now() } }))
         break
       }
 
-      case 'break:request': {
-        const sessionId = peer.ctx?.sessionId
-        broadcast({ event: 'break:requested', data: { duration: msg.data.duration || 60, requestedBy: peer.id } }, sessionId)
-        break
-      }
-
-      case 'modify:request': {
-        const sessionId = peer.ctx?.sessionId
-        broadcast({ event: 'modify:requested', data: { reason: msg.data.reason, requestedBy: peer.id } }, sessionId)
-        break
-      }
-
-      case 'exercise:next': {
-        const sessionId = peer.ctx?.sessionId
-        const state = sessionState.get(sessionId)
-        if (state) {
-          state.currentExerciseIndex++
-          state.repCount = 0
-          state.setCount = 0
-          broadcast({ event: 'exercise:changed', data: { index: state.currentExerciseIndex } }, sessionId)
-        }
-        break
-      }
-
-      case 'session:complete': {
-        const sessionId = peer.ctx?.sessionId
-        const state = sessionState.get(sessionId)
-        if (state) {
-          state.status = 'completed'
-          broadcast({ event: 'session:completed', data: { sessionId } }, sessionId)
-        }
-        break
-      }
-
-      case 'message': {
-        // General chat message between coach and trainee
-        const sessionId = peer.ctx?.sessionId
-        broadcast({ event: 'message', data: { from: peer.id, text: msg.data.text } }, sessionId)
-        break
-      }
-
-      case 'breathing:open': {
-        // Broadcast to ALL connected peers (not session-scoped)
-        const pattern = msg.data?.pattern
-        if (pattern) {
-          broadcast({ event: 'breathing:open', data: { pattern } })
-        }
+      case 'breathing:resumed': {
+        console.log(`[WS] Breathing RESUMED by user`)
+        peer.send(JSON.stringify({ event: 'breathing:resumeConfirmed', data: { timestamp: Date.now() } }))
         break
       }
     }
@@ -169,27 +81,6 @@ export default defineWebSocketHandler({
 
   close(peer) {
     console.log(`[WS] Disconnected: ${peer.id}`)
-    peers.delete(peer.id)
-    // Notify session peers
-    const sessionId = peer.ctx?.sessionId
-    if (sessionId) {
-      broadcast({ event: 'peer:disconnected', data: { peerId: peer.id } }, sessionId)
-    }
+    unregisterPeer(peer.id)
   },
 })
-
-function broadcast(data: any, sessionId?: number) {
-  const message = JSON.stringify(data)
-  for (const [id, peer] of peers) {
-    try {
-      if (sessionId && peer.ctx?.sessionId === sessionId) {
-        peer.send(message)
-      } else if (!sessionId) {
-        peer.send(message)
-      }
-    } catch {
-      // Peer may have disconnected mid-broadcast, clean up
-      peers.delete(id)
-    }
-  }
-}

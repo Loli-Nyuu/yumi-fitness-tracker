@@ -30,6 +30,7 @@ export interface ThemeIcons {
   // Actions
   start: string
   pause: string
+  play: string
   stop: string
   reset: string
   complete: string
@@ -93,6 +94,7 @@ const yumi: ThemeIcons = {
 
   start: 'mdi:play',
   pause: 'mdi:pause',
+  play: 'mdi:play-circle',
   stop: 'mdi:stop',
   reset: 'mdi:refresh',
   complete: 'mdi:check-circle',
@@ -152,6 +154,7 @@ const madoka: ThemeIcons = {
 
   start: 'mdi:play-circle',
   pause: 'mdi:pause-circle',
+  play: 'mdi:play-circle',
   stop: 'mdi:stop-circle',
   reset: 'mdi:refresh',
   complete: 'mdi:check-decagram',
@@ -211,6 +214,7 @@ const rem: ThemeIcons = {
 
   start: 'mdi:play-outline',
   pause: 'mdi:pause-outline',
+  play: 'mdi:play-outline',
   stop: 'mdi:stop-outline',
   reset: 'mdi:restore',
   complete: 'mdi:check-circle-outline',
@@ -270,6 +274,7 @@ const zeroTwo: ThemeIcons = {
 
   start: 'mdi:play',
   pause: 'mdi:pause',
+  play: 'mdi:play-circle',
   stop: 'mdi:stop',
   reset: 'mdi:reload',
   complete: 'mdi:check-bold',

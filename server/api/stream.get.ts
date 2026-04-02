@@ -1,13 +1,10 @@
-import { defineEventHandler } from 'h3'
+import { defineEventHandler, createEventStream } from 'h3'
+import { addSSEListener, removeSSEListener } from './breathing/_state'
 
 export default defineEventHandler(async (event) => {
-  const nitroApp = useNitroApp() as any
-  if (!nitroApp.sseListeners) nitroApp.sseListeners = []
-  
   event.node.res.setHeader('Content-Type', 'text/event-stream')
   event.node.res.setHeader('Cache-Control', 'no-cache, no-transform')
   event.node.res.setHeader('Connection', 'keep-alive')
-  event.node.res.setHeader('Access-Control-Allow-Origin', '*')
   event.node.res.flushHeaders()
   
   const send = (data: string) => {
@@ -16,7 +13,7 @@ export default defineEventHandler(async (event) => {
     } catch {}
   }
   
-  nitroApp.sseListeners.push(send)
+  addSSEListener(send)
   send(JSON.stringify({ event: 'connected' }))
   
   const keepAlive = setInterval(() => {
@@ -25,10 +22,8 @@ export default defineEventHandler(async (event) => {
   
   event.node.res.on('close', () => {
     clearInterval(keepAlive)
-    const idx = (nitroApp.sseListeners || []).indexOf(send)
-    if (idx !== -1) nitroApp.sseListeners.splice(idx, 1)
+    removeSSEListener(send)
   })
   
-  // Return empty to prevent further processing
   return ''
 })
