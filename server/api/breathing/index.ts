@@ -19,4 +19,16 @@ export default defineEventHandler(async (event) => {
     }).run()
     return { id: Number(result.lastInsertRowid), message: 'Breathing session logged!' }
   }
+
+  if (event.method === 'DELETE') {
+    const { useDB, breathingSessions } = await import('../../db')
+    const { eq } = await import('drizzle-orm')
+    const db2 = useDB()
+    const query = getQuery(event)
+    const id = Number(query.id)
+    if (id) {
+      db2.delete(breathingSessions).where(eq(breathingSessions.id, id)).run()
+      return { message: 'Deleted!' }
+    }
+  }
 })

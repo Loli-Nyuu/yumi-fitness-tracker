@@ -24,4 +24,13 @@ export default defineEventHandler(async (event) => {
     }).run()
     return { id: Number(result.lastInsertRowid), message: 'Meal logged!' }
   }
+
+  if (event.method === 'DELETE') {
+    const query = getQuery(event)
+    const id = Number(query.id)
+    if (id) {
+      db.delete(nutritionLog).where(eq(nutritionLog.id, id)).run()
+      return { message: 'Deleted!' }
+    }
+  }
 })
