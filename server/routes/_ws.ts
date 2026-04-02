@@ -10,6 +10,21 @@ const sessionState = new Map<number, {
   setCount: number
 }>()
 
+process.on('uncaughtException', (err: any) => {
+  if (err?.code === 'ECONNRESET' || err?.message?.includes('ECONNRESET')) {
+    console.log('[WS] Connection reset (handled)')
+    return
+  }
+  throw err
+})
+process.on('unhandledRejection', (err: any) => {
+  if (err?.code === 'ECONNRESET' || err?.message?.includes('ECONNRESET')) {
+    console.log('[WS] Connection reset (handled)')
+    return
+  }
+  throw err
+})
+
 export default defineWebSocketHandler({
   open(peer) {
     console.log(`[WS] Connected: ${peer.id}`)
@@ -18,9 +33,15 @@ export default defineWebSocketHandler({
   },
 
   message(peer, rawMessage) {
-    const msg = typeof rawMessage === 'string' ? JSON.parse(rawMessage) : rawMessage
+    let msg: any
+    try {
+      msg = typeof rawMessage === 'string' ? JSON.parse(rawMessage) : rawMessage
+    } catch {
+      console.log(`[WS] Invalid message from ${peer.id}`)
+      return
+    }
 
-    console.log(`[WS] Message from ${peer.id}:`, msg.event)
+    console.log(`[WS] Message from ${peer.id}:`, msg?.event)
 
     switch (msg.event) {
       case 'session:join': {
@@ -134,6 +155,15 @@ export default defineWebSocketHandler({
         broadcast({ event: 'message', data: { from: peer.id, text: msg.data.text } }, sessionId)
         break
       }
+
+      case 'breathing:open': {
+        // Broadcast to ALL connected peers (not session-scoped)
+        const pattern = msg.data?.pattern
+        if (pattern) {
+          broadcast({ event: 'breathing:open', data: { pattern } })
+        }
+        break
+      }
     }
   },
 
@@ -151,10 +181,15 @@ export default defineWebSocketHandler({
 function broadcast(data: any, sessionId?: number) {
   const message = JSON.stringify(data)
   for (const [id, peer] of peers) {
-    if (sessionId && peer.ctx?.sessionId === sessionId) {
-      peer.send(message)
-    } else if (!sessionId) {
-      peer.send(message)
+    try {
+      if (sessionId && peer.ctx?.sessionId === sessionId) {
+        peer.send(message)
+      } else if (!sessionId) {
+        peer.send(message)
+      }
+    } catch {
+      // Peer may have disconnected mid-broadcast, clean up
+      peers.delete(id)
     }
   }
 }
