@@ -700,19 +700,25 @@ const breathingHistory = computed(() => breathingHistoryData.value || [])
 const breathCircleSize = computed(() => {
   if (breathPhase.value === 'inhale') return 85
   if (breathPhase.value === 'hold1' || breathPhase.value === 'hold2') return 85
-  return 30 // exhale
+  return 25 // exhale — fully contracted
 })
 
 const breathTransitionStyle = computed(() => {
   const p = activeBreathing.value
   if (!p) return 'all 0.3s ease'
-  if (breathPhase.value === 'inhale') return `all ${p.inhale}s ease-in-out`
-  if (breathPhase.value === 'exhale') return `all ${p.exhale}s ease-in-out`
-  return 'none' // hold — instant, no transition
+  const phases = ['inhale', 'hold1', 'exhale', 'hold2']
+  const durations = [p.inhale, p.hold1, p.exhale, p.hold2]
+  const idx = phases.indexOf(breathPhase.value)
+  const dur = idx >= 0 ? durations[idx] : 1
+  // Hold phases: no movement, no transition needed
+  if (breathPhase.value === 'hold1' || breathPhase.value === 'hold2') return 'none'
+  // Inhale/exhale: animate over the phase duration
+  return `width ${dur}s ease-in-out, height ${dur}s ease-in-out, opacity ${dur}s ease-in-out, background 0.3s ease`
 })
 
 const breathPhaseLabel = computed(() => {
-  if (breathPhase.value === 'hold1' || breathPhase.value === 'hold2') return 'hold'
+  if (breathPhase.value === 'hold1') return 'inhale hold'
+  if (breathPhase.value === 'hold2') return 'exhale hold'
   return breathPhase.value
 })
 
