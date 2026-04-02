@@ -275,6 +275,7 @@
       </div>
 
       <!-- ═══════════════════════════════════════ -->
+      <!-- ═══════════════════════════════════════ -->
       <!-- 🫁 BREATHING                            -->
       <!-- ═══════════════════════════════════════ -->
       <div class="bg-card p-6 relative">
@@ -286,22 +287,20 @@
         <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
           <Icon :name="icons.breathing" /> Breathing
         </h2>
-        <div class="grid grid-cols-1 gap-2">
-          <button v-for="pattern in breathingPatterns" :key="pattern.id" @click="startBreathing(pattern)"
-            class="p-3 rounded-xl text-left transition-all" :style="{ background: 'var(--surface-light)', borderRadius: 'var(--radius)' }">
-            <p class="font-semibold">{{ pattern.name }}</p>
-            <p class="text-sm" style="color: var(--text-muted)">{{ pattern.description }}</p>
+        <!-- Pattern cards with descriptions -->
+        <div class="space-y-2">
+          <button v-for="pattern in breathingPatterns" :key="pattern.id" @click="openBreathingDetail(pattern)"
+            class="w-full p-3 rounded-xl text-left transition-all hover:scale-[1.01]" :style="{ background: 'var(--surface-light)', borderRadius: 'var(--radius)' }">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="font-semibold">{{ pattern.name }}</p>
+                <p class="text-xs mt-0.5" style="color: var(--text-muted)">{{ pattern.helps }}</p>
+              </div>
+              <Icon :name="icons.breathing" class="text-lg" style="color: var(--text-muted)" />
+            </div>
           </button>
         </div>
-        <div v-if="activeBreathing" class="mt-4 text-center">
-          <Icon :name="icons.breathing" class="text-6xl mb-4 transition-all duration-1000" :class="breathPhase === 'inhale' ? 'scale-125' : breathPhase === 'exhale' ? 'scale-75' : 'scale-100'" />
-          <p class="text-2xl font-bold capitalize" style="color: var(--primary)">{{ breathPhase }}</p>
-          <p class="text-4xl font-mono mt-2">{{ breathTimer }}</p>
-          <p class="text-sm mt-1" style="color: var(--text-muted)">Round {{ breathRounds }} · {{ formatDuration(breathElapsed) }}</p>
-          <button @click="stopBreathing" class="mt-4 px-4 py-2 rounded-xl transition-all flex items-center gap-2 mx-auto" :style="{ background: 'color-mix(in srgb, var(--danger) 20%, transparent)', color: 'var(--danger)', borderRadius: 'var(--radius)' }">
-            <Icon :name="icons.stop" /> Stop
-          </button>
-        </div>
+
         <!-- Breathing History Modal -->
         <Transition name="slide">
           <div v-if="showBreathingHistory" class="fixed inset-0 z-50 flex items-center justify-center p-4" @click.self="showBreathingHistory = false">
@@ -328,8 +327,92 @@
             </div>
           </div>
         </Transition>
-      </div>
 
+        <!-- Breathing Side Panel -->
+        <Transition name="panel">
+          <div v-if="showBreathingPanel" class="fixed inset-0 z-50 flex justify-end" @click.self="closeBreathingPanel">
+            <div class="w-full max-w-sm h-full overflow-y-auto p-6 flex flex-col" style="background: var(--surface); border-left: 1px solid var(--border)">
+              <!-- Close button -->
+              <div class="flex justify-end mb-4">
+                <button @click="closeBreathingPanel" class="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110"
+                  style="background: var(--surface-light); color: var(--text-muted)">
+                  <Icon :name="icons.close" />
+                </button>
+              </div>
+
+              <!-- NOT STARTED: Pattern detail -->
+              <div v-if="!activeBreathing" class="flex-1 flex flex-col items-center justify-center text-center">
+                <Icon :name="icons.breathing" class="text-5xl mb-4" style="color: var(--primary)" />
+                <h3 class="text-xl font-bold mb-1" style="color: var(--primary)">{{ selectedPattern?.name }}</h3>
+                <p class="text-sm mb-6" style="color: var(--text-muted)">{{ selectedPattern?.helps }}</p>
+                <div class="w-full p-4 rounded-xl mb-6" style="background: var(--surface-light)">
+                  <p class="text-sm" style="color: var(--text)">{{ selectedPattern?.instructions }}</p>
+                </div>
+
+                <!-- Round presets -->
+                <p class="text-xs mb-2" style="color: var(--text-muted)">Repeat for</p>
+                <div class="flex flex-wrap gap-2 mb-6 justify-center">
+                  <button v-for="opt in roundOptions" :key="opt.value" @click="selectedRounds = opt.value"
+                    class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
+                    :style="selectedRounds === opt.value
+                      ? { background: 'var(--primary)', color: 'var(--background)' }
+                      : { background: 'var(--surface-light)', color: 'var(--text-muted)' }">
+                    {{ opt.label }}
+                  </button>
+                </div>
+
+                <button @click="startBreathingSession"
+                  class="px-8 py-3 rounded-xl font-semibold transition-all hover:scale-105"
+                  :style="{ background: 'var(--primary)', color: 'var(--background)' }">
+                  <Icon :name="icons.start" /> Start
+                </button>
+              </div>
+
+              <!-- STARTED: Visual guide -->
+              <div v-else class="flex-1 flex flex-col items-center justify-center text-center">
+                <!-- Lung circle animation -->
+                <div class="relative w-40 h-40 mb-6 flex items-center justify-center">
+                  <!-- Outer ring -->
+                  <div class="absolute inset-0 rounded-full" style="border: 2px solid var(--border)"></div>
+                  <!-- Animated lung circle -->
+                  <div class="rounded-full transition-all flex items-center justify-center"
+                    :style="{
+                      width: breathCircleSize + '%',
+                      height: breathCircleSize + '%',
+                      background: breathPhase === 'inhale' ? 'var(--primary)'
+                        : breathPhase === 'hold1' || breathPhase === 'hold2' ? 'var(--accent)'
+                        : 'color-mix(in srgb, var(--primary) 30%, transparent)',
+                      opacity: breathPhase === 'exhale' ? 0.5 : 1,
+                      transition: breathTransitionStyle,
+                    }">
+                    <span v-if="breathPhase === 'hold1' || breathPhase === 'hold2'" class="text-xs font-bold" style="color: var(--background)">Hold</span>
+                  </div>
+                </div>
+
+                <!-- Phase label -->
+                <p class="text-3xl font-bold capitalize mb-1" style="color: var(--primary)">{{ breathPhaseLabel }}</p>
+                <p class="text-5xl font-mono font-bold mb-2">{{ breathTimer }}</p>
+
+                <!-- Progress -->
+                <div class="flex items-center gap-3 mb-6">
+                  <span class="text-sm" style="color: var(--text-muted)">
+                    Round {{ breathRounds }}{{ selectedRounds > 0 ? '/' + selectedRounds : '' }}
+                  </span>
+                  <span class="text-sm" style="color: var(--text-muted)">·</span>
+                  <span class="text-sm" style="color: var(--text-muted)">{{ formatDuration(breathElapsed) }}</span>
+                </div>
+
+                <!-- Stop button -->
+                <button @click="stopBreathing"
+                  class="px-6 py-2.5 rounded-xl font-medium transition-all hover:scale-105"
+                  :style="{ background: 'color-mix(in srgb, var(--danger) 20%, transparent)', color: 'var(--danger)' }">
+                  <Icon :name="icons.stop" /> Stop
+                </button>
+              </div>
+            </div>
+          </div>
+        </Transition>
+      </div>
       <!-- ═══════════════════════════════════════ -->
       <!-- 🍽️ NUTRITION                            -->
       <!-- ═══════════════════════════════════════ -->
@@ -415,7 +498,6 @@
     </div>
   </div>
 </template>
-
 <script setup lang="ts">
 import { getIcons } from '../utils/theme-icons'
 
@@ -563,12 +645,45 @@ function bodyPartEmoji(part: string) { return bodyPartEmojis[part] || '📍' }
 function sorenessColorBg(sev: number) { return sev <= 2 ? 'color-mix(in srgb, var(--success) 20%, transparent)' : sev <= 3 ? 'color-mix(in srgb, var(--warning) 20%, transparent)' : 'color-mix(in srgb, var(--danger) 20%, transparent)' }
 function sorenessColorFg(sev: number) { return sev <= 2 ? 'var(--success)' : sev <= 3 ? 'var(--warning)' : 'var(--danger)' }
 
+
 // BREATHING
 const breathingPatterns = [
-  { id: 'box', name: 'Box Breathing', description: '4-4-4-4. Calming.', inhale: 4, hold1: 4, exhale: 4, hold2: 4 },
-  { id: '478', name: '4-7-8 Breathing', description: 'Sleep aid.', inhale: 4, hold1: 7, exhale: 8, hold2: 0 },
-  { id: 'diaphragmatic', name: 'Deep Belly', description: 'Slow deep breaths. 5-5.', inhale: 5, hold1: 2, exhale: 5, hold2: 0 },
+  {
+    id: 'box', name: 'Box Breathing',
+    helps: 'Reduces stress and anxiety. Great before meetings or after heated moments.',
+    instructions: 'Breathe in for 4 seconds, hold for 4, breathe out for 4, hold for 4. Keep a steady rhythm like tracing a square.',
+    inhale: 4, hold1: 4, exhale: 4, hold2: 4,
+  },
+  {
+    id: '478', name: '4-7-8 Breathing',
+    helps: 'Natural sleep aid. Use before bed or when you can\'t fall asleep.',
+    instructions: 'Breathe in through your nose for 4 seconds, hold for 7, then slowly exhale through your mouth for 8. The long exhale is key.',
+    inhale: 4, hold1: 7, exhale: 8, hold2: 0,
+  },
+  {
+    id: 'diaphragmatic', name: 'Deep Belly Breathing',
+    helps: 'Activates the parasympathetic system. Good for focus and recovery.',
+    instructions: 'Place a hand on your belly. Breathe deep so your belly rises (not your chest). Inhale 5 seconds, brief hold, exhale 5 seconds.',
+    inhale: 5, hold1: 2, exhale: 5, hold2: 0,
+  },
+  {
+    id: 'energizing', name: 'Energizing Breath',
+    helps: 'Quick energy boost. Use in the afternoon slump instead of coffee.',
+    instructions: 'Fast inhale through nose (2 sec), sharp exhale through mouth (1 sec). Short, rhythmic. Like a gentle bellows.',
+    inhale: 2, hold1: 0, exhale: 1, hold2: 0,
+  },
 ]
+
+const roundOptions = [
+  { label: '3 rounds', value: 3 },
+  { label: '5 rounds', value: 5 },
+  { label: '10 rounds', value: 10 },
+  { label: '∞ Free', value: 0 },
+]
+
+const showBreathingPanel = ref(false)
+const selectedPattern = ref<any>(null)
+const selectedRounds = ref(5)
 const activeBreathing = ref<any>(null)
 const breathPhase = ref('inhale')
 const breathTimer = ref(0)
@@ -577,30 +692,80 @@ const breathElapsed = ref(0)
 const showBreathingHistory = ref(false)
 let breathInterval: ReturnType<typeof setInterval> | null = null
 let breathElapsedInterval: ReturnType<typeof setInterval> | null = null
+
 const { data: breathingHistoryData, refresh: refreshBreathing } = useFetch<any[]>('/api/breathing')
 const breathingHistory = computed(() => breathingHistoryData.value || [])
 
-function startBreathing(pattern: any) {
-  activeBreathing.value = pattern; breathPhase.value = 'inhale'; breathTimer.value = pattern.inhale
-  breathRounds.value = 1; breathElapsed.value = 0
-  if (breathInterval) clearInterval(breathInterval); if (breathElapsedInterval) clearInterval(breathElapsedInterval)
+// Visual circle size (30% empty → 100% full)
+const breathCircleSize = computed(() => {
+  if (breathPhase.value === 'inhale') return 85
+  if (breathPhase.value === 'hold1' || breathPhase.value === 'hold2') return 85
+  return 30 // exhale
+})
+
+const breathTransitionStyle = computed(() => {
+  const p = activeBreathing.value
+  if (!p) return 'all 0.3s ease'
+  if (breathPhase.value === 'inhale') return `all ${p.inhale}s ease-in-out`
+  if (breathPhase.value === 'exhale') return `all ${p.exhale}s ease-in-out`
+  return 'none' // hold — instant, no transition
+})
+
+const breathPhaseLabel = computed(() => {
+  if (breathPhase.value === 'hold1' || breathPhase.value === 'hold2') return 'hold'
+  return breathPhase.value
+})
+
+function openBreathingDetail(pattern: any) {
+  selectedPattern.value = pattern
+  activeBreathing.value = null
+  showBreathingPanel.value = true
+}
+
+function closeBreathingPanel() {
+  if (activeBreathing.value) stopBreathing()
+  showBreathingPanel.value = false
+  selectedPattern.value = null
+}
+
+function startBreathingSession() {
+  const pattern = selectedPattern.value
+  if (!pattern) return
+  activeBreathing.value = pattern
+  breathPhase.value = 'inhale'
+  breathTimer.value = pattern.inhale
+  breathRounds.value = 1
+  breathElapsed.value = 0
+  if (breathInterval) clearInterval(breathInterval)
+  if (breathElapsedInterval) clearInterval(breathElapsedInterval)
   breathElapsedInterval = setInterval(() => { breathElapsed.value++ }, 1000)
+
   const phases = ['inhale', 'hold1', 'exhale', 'hold2']
   const durations = [pattern.inhale, pattern.hold1, pattern.exhale, pattern.hold2]
   let phaseIndex = 0
+
   breathInterval = setInterval(() => {
     breathTimer.value--
     if (breathTimer.value <= 0) {
       phaseIndex = (phaseIndex + 1) % 4
       if (durations[phaseIndex] === 0) phaseIndex = (phaseIndex + 1) % 4
-      if (phaseIndex === 0) breathRounds.value++
-      breathPhase.value = phases[phaseIndex]; breathTimer.value = durations[phaseIndex]
+      if (phaseIndex === 0) {
+        breathRounds.value++
+        // Check if we hit the round limit
+        if (selectedRounds.value > 0 && breathRounds.value > selectedRounds.value) {
+          stopBreathing()
+          return
+        }
+      }
+      breathPhase.value = phases[phaseIndex]
+      breathTimer.value = durations[phaseIndex]
     }
   }, 1000)
 }
 
 async function stopBreathing() {
-  if (breathInterval) clearInterval(breathInterval); if (breathElapsedInterval) clearInterval(breathElapsedInterval)
+  if (breathInterval) clearInterval(breathInterval)
+  if (breathElapsedInterval) clearInterval(breathElapsedInterval)
   const pattern = activeBreathing.value
   if (pattern && breathElapsed.value > 0) {
     await $fetch('/api/breathing', { method: 'POST', body: { pattern: pattern.name, duration: breathElapsed.value, rounds: breathRounds.value } })
@@ -608,7 +773,11 @@ async function stopBreathing() {
   }
   activeBreathing.value = null
 }
-async function deleteBreathing(id: number) { await $fetch(`/api/breathing?id=${id}`, { method: 'DELETE' }); await refreshBreathing() }
+
+async function deleteBreathing(id: number) {
+  await $fetch(`/api/breathing?id=${id}`, { method: 'DELETE' })
+  await refreshBreathing()
+}
 
 // NUTRITION
 const showNutritionHistory = ref(false)
