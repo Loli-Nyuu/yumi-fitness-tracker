@@ -1,0 +1,333 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════
+   🍑 Yumi Fitness Tracker — Theme System
+   
+   Themes: yumi, madoka, rem, zero-two
+   Modes: light, dark (only bg/surface/text change)
+   ═══════════════════════════════════════════════════ */
+
+/* ── Base ── */
+html {
+  font-family: var(--font-body);
+  color: var(--text);
+  background: var(--background);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body {
+  min-height: 100dvh;
+  color: var(--text);
+  font-family: var(--font-body);
+}
+
+/* All text elements inherit the body font */
+p, span, div, li, td, label, input, select, textarea, button {
+  font-family: var(--font-body);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--primary);
+  font-family: var(--font-heading);
+}
+
+a {
+  color: var(--primary);
+  font-family: var(--font-body);
+}
+
+/* ═══════════════════════════════════════════════════
+   🍑 YUMI — Athletic, energetic, teal & coral
+   Sharp but friendly. Gym energy.
+   ═══════════════════════════════════════════════════ */
+
+[data-theme="yumi"] {
+  --primary: #00D4AA;
+  --primary-hover: #00E8BB;
+  --secondary: #FF6B6B;
+  --accent: #FFD93D;
+  --gradient: linear-gradient(135deg, #00D4AA, #FF6B6B);
+  --radius: 1rem;
+  --radius-sm: 0.5rem;
+  --radius-lg: 1.5rem;
+  --font-heading: 'Inter', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+[data-theme="yumi"][data-mode="dark"] {
+  --background: #1A1A2E;
+  --surface: #16213E;
+  --surface-hover: #1F2B47;
+  --surface-light: #1F2B47;
+  --text: #F0F0F0;
+  --text-muted: #8892B0;
+  --success: #00D4AA;
+  --warning: #FFD93D;
+  --danger: #FF6B6B;
+  --info: #64B5F6;
+  --border: rgba(255, 255, 255, 0.08);
+  --glow: rgba(0, 212, 170, 0.3);
+}
+
+[data-theme="yumi"][data-mode="light"] {
+  --background: #F8F9FA;
+  --surface: #FFFFFF;
+  --surface-hover: #F0F0F0;
+  --surface-light: #F0F0F0;
+  --text: #1A1A2E;
+  --text-muted: #6C757D;
+  --success: #00B894;
+  --warning: #F39C12;
+  --danger: #E74C3C;
+  --info: #3498DB;
+  --border: rgba(0, 0, 0, 0.08);
+  --glow: rgba(0, 184, 148, 0.2);
+}
+
+/* ═══════════════════════════════════════════════════
+   🌸 MADOKA — Magical girl. PINK EVERYTHING.
+   Kyubey eyes purple. Ribbons. Sparkles. Cute overload.
+   ═══════════════════════════════════════════════════ */
+
+[data-theme="madoka"] {
+  --primary: #FF69B4;
+  --primary-hover: #FF85C8;
+  --secondary: #DA70D6;
+  --accent: #FFD700;
+  --gradient: linear-gradient(135deg, #FF69B4, #DA70D6, #FFB6C1);
+  --radius: 1.5rem;
+  --radius-sm: 1rem;
+  --radius-lg: 2rem;
+  --font-heading: 'Quicksand', 'Nunito', system-ui, sans-serif;
+  --font-body: 'Nunito', 'Quicksand', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+[data-theme="madoka"][data-mode="dark"] {
+  --background: #150818;
+  --surface: #2A1030;
+  --surface-hover: #3A1840;
+  --surface-light: #3A1840;
+  --text: #FFF0F8;
+  --text-muted: #E0A8D0;
+  --success: #7BFC7B;
+  --warning: #FFD700;
+  --danger: #FF5FA2;
+  --info: #B48EFF;
+  --border: rgba(255, 105, 180, 0.25);
+  --glow: rgba(255, 105, 180, 0.4);
+}
+
+[data-theme="madoka"][data-mode="light"] {
+  --background: #FFF0F8;
+  --surface: #FFFFFF;
+  --surface-hover: #FFE4F2;
+  --surface-light: #FFE4F2;
+  --text: #4A0E3A;
+  --text-muted: #A0508A;
+  --success: #50C878;
+  --warning: #FFB700;
+  --danger: #FF4081;
+  --info: #B48EFF;
+  --border: rgba(255, 105, 180, 0.2);
+  --glow: rgba(255, 105, 180, 0.25);
+}
+
+/* ═══════════════════════════════════════════════════
+   💎 REM — Elegant, blue, silver. Maid precision.
+   Clean. Devoted. Beautiful restraint.
+   ═══════════════════════════════════════════════════ */
+
+[data-theme="rem"] {
+  --primary: #5B9BD5;
+  --primary-hover: #7AB5E8;
+  --secondary: #A8C8E8;
+  --accent: #E8E8F0;
+  --gradient: linear-gradient(135deg, #5B9BD5, #87CEEB, #A8C8E8);
+  --radius: 0.75rem;
+  --radius-sm: 0.375rem;
+  --radius-lg: 1rem;
+  --font-heading: 'Playfair Display', 'Georgia', serif;
+  --font-body: 'Lora', 'Georgia', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+[data-theme="rem"][data-mode="dark"] {
+  --background: #080E1A;
+  --surface: #121E30;
+  --surface-hover: #1A2840;
+  --surface-light: #1A2840;
+  --text: #E8F0FF;
+  --text-muted: #90A8C8;
+  --success: #66BB6A;
+  --warning: #FFA726;
+  --danger: #EF5350;
+  --info: #42A5F5;
+  --border: rgba(91, 155, 213, 0.15);
+  --glow: rgba(91, 155, 213, 0.25);
+}
+
+[data-theme="rem"][data-mode="light"] {
+  --background: #F0F4F8;
+  --surface: #FFFFFF;
+  --surface-hover: #E8F0FE;
+  --surface-light: #E8F0FE;
+  --text: #1A2A3A;
+  --text-muted: #5A6A7A;
+  --success: #4CAF50;
+  --warning: #FF9800;
+  --danger: #F44336;
+  --info: #2196F3;
+  --border: rgba(91, 155, 213, 0.15);
+  --glow: rgba(91, 155, 213, 0.15);
+}
+
+/* ═══════════════════════════════════════════════════
+   🔥 ZERO TWO — Bold, red, dark rose. Dangerous love.
+   Sharp. Passionate. Darling.
+   ═══════════════════════════════════════════════════ */
+
+[data-theme="zero-two"] {
+  --primary: #E84057;
+  --primary-hover: #FF5A6E;
+  --secondary: #FF8C94;
+  --accent: #FF4081;
+  --gradient: linear-gradient(135deg, #E84057, #FF8C94);
+  --radius: 0.5rem;
+  --radius-sm: 0.25rem;
+  --radius-lg: 0.75rem;
+  --font-heading: 'Bebas Neue', 'Oswald', 'Impact', sans-serif;
+  --font-body: 'Rajdhani', 'Exo 2', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+[data-theme="zero-two"][data-mode="dark"] {
+  --background: #0F0508;
+  --surface: #251015;
+  --surface-hover: #351820;
+  --surface-light: #351820;
+  --text: #FFF0F2;
+  --text-muted: #C08890;
+  --success: #4ADE80;
+  --warning: #FBBF24;
+  --danger: #EF4444;
+  --info: #F472B6;
+  --border: rgba(232, 64, 87, 0.18);
+  --glow: rgba(232, 64, 87, 0.4);
+}
+
+[data-theme="zero-two"][data-mode="light"] {
+  --background: #FFF5F6;
+  --surface: #FFFFFF;
+  --surface-hover: #FFE8EC;
+  --surface-light: #FFE8EC;
+  --text: #2A0A10;
+  --text-muted: #8A5058;
+  --success: #22C55E;
+  --warning: #F59E0B;
+  --danger: #DC2626;
+  --info: #EC4899;
+  --border: rgba(232, 64, 87, 0.15);
+  --glow: rgba(232, 64, 87, 0.15);
+}
+
+/* ═══════════════════════════════════════════════════
+   Shared Tailwind Theme Tokens
+   ═══════════════════════════════════════════════════ */
+
+@theme {
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-light: var(--surface-light);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-info: var(--info);
+
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-mono);
+}
+
+/* ═══════════════════════════════════════════════════
+   Shared Component Styles
+   ═══════════════════════════════════════════════════ */
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--background); }
+::-webkit-scrollbar-thumb { background: var(--surface-light); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+.text-gradient {
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bg-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+}
+
+.bg-card h1, .bg-card h2, .bg-card h3, .bg-card h4, .bg-card h5, .bg-card h6 {
+  color: var(--primary);
+  font-family: var(--font-heading);
+}
+
+.bg-card p, .bg-card span, .bg-card div, .bg-card li {
+  color: inherit;
+}
+
+.glow-primary {
+  box-shadow: 0 0 20px var(--glow);
+}
+
+/* Timer Pulse */
+@keyframes timer-pulse {
+  0%, 100% { box-shadow: 0 0 20px var(--glow); }
+  50% { box-shadow: 0 0 40px var(--glow); }
+}
+.timer-active { animation: timer-pulse 1.5s ease-in-out infinite; }
+
+/* PR Sparkle */
+@keyframes sparkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.1); }
+}
+.pr-badge { animation: sparkle 1s ease-in-out infinite; }
+
+/* Page transitions */
+.page-enter-active, .page-leave-active { transition: all 0.3s ease; }
+.page-enter-from { opacity: 0; transform: translateY(10px); }
+.page-leave-to { opacity: 0; transform: translateY(-10px); }
+
+/* ═══════════════════════════════════════════════════
+   Theme-Specific Decorations
+   ═══════════════════════════════════════════════════ */
+
+/* Madoka — sparkle gradient overlay on cards */
+[data-theme="madoka"] .bg-card {
+  background-image:
+    radial-gradient(circle at 15% 85%, rgba(255, 105, 180, 0.06) 0%, transparent 40%),
+    radial-gradient(circle at 85% 15%, rgba(218, 112, 214, 0.06) 0%, transparent 40%);
+  border-color: rgba(255, 105, 180, 0.18);
+}
+
+/* Rem — subtle left accent */
+[data-theme="rem"] .bg-card {
+  border-left: 3px solid var(--primary);
+}
+
+/* Zero Two — sharp angular feel */
+[data-theme="zero-two"] .bg-card {
+  border-left: 3px solid var(--primary);
+  border-radius: var(--radius-sm);
+}
