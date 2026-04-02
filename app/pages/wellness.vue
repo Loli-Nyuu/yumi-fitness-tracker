@@ -375,15 +375,13 @@
                   <!-- Outer ring -->
                   <div class="absolute inset-0 rounded-full" style="border: 2px solid var(--border)"></div>
                   <!-- Animated lung circle -->
-                  <div class="rounded-full transition-all flex items-center justify-center"
+                  <div class="rounded-full flex items-center justify-center"
                     :style="{
                       width: breathCircleSize + '%',
                       height: breathCircleSize + '%',
-                      background: breathPhase === 'inhale' ? 'var(--primary)'
-                        : breathPhase === 'hold1' || breathPhase === 'hold2' ? 'var(--accent)'
-                        : 'color-mix(in srgb, var(--primary) 30%, transparent)',
-                      opacity: breathPhase === 'exhale' ? 0.5 : 1,
-                      transition: breathTransitionStyle,
+                      background: breathCircleBg,
+                      opacity: breathCircleOpacity,
+                      transition: breathCircleTransition,
                     }">
                     <span v-if="breathPhase === 'hold1' || breathPhase === 'hold2'" class="text-xs font-bold" style="color: var(--background)">Hold</span>
                   </div>
@@ -697,24 +695,30 @@ const { data: breathingHistoryData, refresh: refreshBreathing } = useFetch<any[]
 const breathingHistory = computed(() => breathingHistoryData.value || [])
 
 // Visual circle size (30% empty → 100% full)
-const breathCircleSize = computed(() => {
-  if (breathPhase.value === 'inhale') return 85
-  if (breathPhase.value === 'hold1' || breathPhase.value === 'hold2') return 85
-  return 25 // exhale — fully contracted
-})
+const breathCircleSize = ref(25)
+const breathCircleTransition = ref('all 0.3s ease')
+const breathCircleBg = ref('color-mix(in srgb, var(--primary) 30%, transparent)')
+const breathCircleOpacity = ref(0.5)
 
-const breathTransitionStyle = computed(() => {
-  const p = activeBreathing.value
-  if (!p) return 'all 0.3s ease'
-  const phases = ['inhale', 'hold1', 'exhale', 'hold2']
-  const durations = [p.inhale, p.hold1, p.exhale, p.hold2]
-  const idx = phases.indexOf(breathPhase.value)
-  const dur = idx >= 0 ? durations[idx] : 1
-  // Hold phases: no movement, no transition needed
-  if (breathPhase.value === 'hold1' || breathPhase.value === 'hold2') return 'none'
-  // Inhale/exhale: animate over the phase duration
-  return `width ${dur}s ease-in-out, height ${dur}s ease-in-out, opacity ${dur}s ease-in-out, background 0.3s ease`
-})
+function updateBreathCircle(phase: string, durationSec: number) {
+  const dur = durationSec > 0 ? durationSec : 1
+  const transition = `width ${dur}s ease-in-out, height ${dur}s ease-in-out, opacity ${dur}s ease-in-out`
+  if (phase === 'inhale') {
+    breathCircleTransition.value = transition
+    breathCircleSize.value = 85
+    breathCircleBg.value = 'var(--primary)'
+    breathCircleOpacity.value = 1
+  } else if (phase === 'hold1' || phase === 'hold2') {
+    // Hold — no transition, just stay where we are
+    breathCircleTransition.value = 'background 0.3s ease'
+    breathCircleBg.value = 'var(--accent)'
+  } else if (phase === 'exhale') {
+    breathCircleTransition.value = transition
+    breathCircleSize.value = 25
+    breathCircleBg.value = 'color-mix(in srgb, var(--primary) 30%, transparent)'
+    breathCircleOpacity.value = 0.5
+  }
+}
 
 const breathPhaseLabel = computed(() => {
   if (breathPhase.value === 'hold1') return 'inhale hold'
@@ -742,6 +746,8 @@ function startBreathingSession() {
   breathTimer.value = pattern.inhale
   breathRounds.value = 1
   breathElapsed.value = 0
+  breathCircleSize.value = 25
+  updateBreathCircle('inhale', pattern.inhale)
   if (breathInterval) clearInterval(breathInterval)
   if (breathElapsedInterval) clearInterval(breathElapsedInterval)
   breathElapsedInterval = setInterval(() => { breathElapsed.value++ }, 1000)
@@ -765,6 +771,7 @@ function startBreathingSession() {
       }
       breathPhase.value = phases[phaseIndex]
       breathTimer.value = durations[phaseIndex]
+      updateBreathCircle(phases[phaseIndex], durations[phaseIndex])
     }
   }, 1000)
 }
