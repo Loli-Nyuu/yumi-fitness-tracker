@@ -388,7 +388,14 @@
                 </div>
 
                 <!-- Phase label -->
-                <p class="text-3xl font-bold capitalize mb-1" style="color: var(--primary)">{{ breathPhaseLabel }}</p>
+                <!-- Phase label with nose/mouth indicator -->
+                <div class="flex items-center gap-2 mb-1 justify-center">
+                  <p class="text-3xl font-bold capitalize" style="color: var(--primary)">{{ breathPhaseLabel }}</p>
+                  <span v-if="breathRouteIndicator" class="text-lg px-2 py-0.5 rounded-full font-medium"
+                    :style="{ background: 'color-mix(in srgb, var(--primary) 15%, transparent)', color: 'var(--primary)' }">
+                    {{ breathRouteIndicator === 'nose' ? '👃' : '👄' }} {{ breathRouteIndicator }}
+                  </span>
+                </div>
                 <p class="text-5xl font-mono font-bold mb-2">{{ breathTimer }}</p>
 
                 <!-- Progress -->
@@ -651,24 +658,28 @@ const breathingPatterns = [
     helps: 'Reduces stress and anxiety. Great before meetings or after heated moments.',
     instructions: 'Breathe in for 4 seconds, hold for 4, breathe out for 4, hold for 4. Keep a steady rhythm like tracing a square.',
     inhale: 4, hold1: 4, exhale: 4, hold2: 4,
+    inhaleRoute: 'nose', exhaleRoute: 'nose',
   },
   {
     id: '478', name: '4-7-8 Breathing',
     helps: 'Natural sleep aid. Use before bed or when you can\'t fall asleep.',
     instructions: 'Breathe in through your nose for 4 seconds, hold for 7, then slowly exhale through your mouth for 8. The long exhale is key.',
     inhale: 4, hold1: 7, exhale: 8, hold2: 0,
+    inhaleRoute: 'nose', exhaleRoute: 'mouth',
   },
   {
     id: 'diaphragmatic', name: 'Deep Belly Breathing',
     helps: 'Activates the parasympathetic system. Good for focus and recovery.',
     instructions: 'Place a hand on your belly. Breathe deep so your belly rises (not your chest). Inhale 5 seconds, brief hold, exhale 5 seconds.',
     inhale: 5, hold1: 2, exhale: 5, hold2: 0,
+    inhaleRoute: 'nose', exhaleRoute: 'nose',
   },
   {
     id: 'energizing', name: 'Energizing Breath',
     helps: 'Quick energy boost. Use in the afternoon slump instead of coffee.',
     instructions: 'Fast inhale through nose (2 sec), sharp exhale through mouth (1 sec). Short, rhythmic. Like a gentle bellows.',
     inhale: 2, hold1: 0, exhale: 1, hold2: 0,
+    inhaleRoute: 'nose', exhaleRoute: 'mouth',
   },
 ]
 
@@ -726,6 +737,14 @@ const breathPhaseLabel = computed(() => {
   return breathPhase.value
 })
 
+const breathRouteIndicator = computed(() => {
+  const p = activeBreathing.value
+  if (!p) return null
+  if (breathPhase.value === 'inhale') return p.inhaleRoute || null
+  if (breathPhase.value === 'exhale') return p.exhaleRoute || null
+  return null // hold phases don't show a route
+})
+
 function openBreathingDetail(pattern: any) {
   selectedPattern.value = pattern
   activeBreathing.value = null
@@ -742,28 +761,45 @@ function startBreathingSession() {
   const pattern = selectedPattern.value
   if (!pattern) return
   activeBreathing.value = pattern
-  breathPhase.value = 'inhale'
-  breathTimer.value = pattern.inhale
   breathRounds.value = 1
   breathElapsed.value = 0
-  breathCircleSize.value = 25
-  updateBreathCircle('inhale', pattern.inhale)
+
   if (breathInterval) clearInterval(breathInterval)
   if (breathElapsedInterval) clearInterval(breathElapsedInterval)
   breathElapsedInterval = setInterval(() => { breathElapsed.value++ }, 1000)
 
-  const phases = ['inhale', 'hold1', 'exhale', 'hold2']
-  const durations = [pattern.inhale, pattern.hold1, pattern.exhale, pattern.hold2]
+  // Build the phase cycle, skipping zero-duration phases
+  const rawPhases = ['inhale', 'hold1', 'exhale', 'hold2']
+  const rawDurations = [pattern.inhale, pattern.hold1, pattern.exhale, pattern.hold2]
+  const phases: string[] = []
+  const durations: number[] = []
+  for (let i = 0; i < 4; i++) {
+    if (rawDurations[i] > 0) {
+      phases.push(rawPhases[i])
+      durations.push(rawDurations[i])
+    }
+  }
+  if (phases.length === 0) return
+
   let phaseIndex = 0
+
+  // Set initial state without transition (start small, then animate)
+  breathCircleSize.value = 25
+  breathCircleTransition.value = 'none'
+  breathPhase.value = phases[0]
+  breathTimer.value = durations[0]
+
+  // Kick off the first animation on the next frame so the browser registers the "before" state
+  requestAnimationFrame(() => {
+    updateBreathCircle(phases[0], durations[0])
+  })
 
   breathInterval = setInterval(() => {
     breathTimer.value--
     if (breathTimer.value <= 0) {
-      phaseIndex = (phaseIndex + 1) % 4
-      if (durations[phaseIndex] === 0) phaseIndex = (phaseIndex + 1) % 4
+      phaseIndex = (phaseIndex + 1) % phases.length
       if (phaseIndex === 0) {
         breathRounds.value++
-        // Check if we hit the round limit
         if (selectedRounds.value > 0 && breathRounds.value > selectedRounds.value) {
           stopBreathing()
           return
