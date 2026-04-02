@@ -331,3 +331,40 @@ a {
   border-left: 3px solid var(--primary);
   border-radius: var(--radius-sm);
 }
+
+/* ═══════════════════════════════════════════════════
+   ✨ Modal Transitions & Backdrop
+   ═══════════════════════════════════════════════════ */
+
+/* Slide-up enter / exit */
+.slide-enter-active,
+.slide-leave-active {
+  transition: opacity 0.25s ease;
+}
+.slide-enter-active .rounded-2xl,
+.slide-leave-active .rounded-2xl {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+}
+
+.slide-enter-from {
+  opacity: 0;
+}
+.slide-enter-from .rounded-2xl {
+  transform: translateY(24px) scale(0.96);
+  opacity: 0;
+}
+
+.slide-leave-to {
+  opacity: 0;
+}
+.slide-leave-to .rounded-2xl {
+  transform: translateY(12px) scale(0.98);
+  opacity: 0;
+}
+
+/* Backdrop blur on modal overlay */
+.fixed.inset-0.z-50 {
+  backdrop-filter: blur(8px) saturate(120%);
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  background: rgba(0, 0, 0, 0.4);
+}
