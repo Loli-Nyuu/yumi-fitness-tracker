@@ -136,6 +136,7 @@
 
 <script setup lang="ts">
 import { getIcons } from '~/utils/theme-icons'
+import { useExercisePanel } from '~/composables/useExercisePanel'
 import { useAutoExercise } from '~/composables/useAutoExercise'
 import type { ExerciseConfig, RepsModeConfig, TimedModeConfig } from '~/types/exercise-config'
 
@@ -149,7 +150,16 @@ onMounted(async () => {
   } catch {}
 })
 
-// Use the auto-exercise composable
+// Use the exercise panel composable (shared state for show/hide)
+const {
+  showExercisePanel,
+  selectedExercise,
+  isGuidedSession,
+  openExercisePanel: openPanel,
+  closeExercisePanel: closePanel,
+} = useExercisePanel()
+
+// Use the auto-exercise engine (local state for exercise execution)
 const {
   phase,
   currentRep,
@@ -159,19 +169,13 @@ const {
   currentCue,
   isPaused,
   countdownValue,
+  sessionComplete,
   startExercise,
   pauseExercise,
   resumeExercise,
   stopExercise,
   skipRest,
-  on,
-  off,
 } = useAutoExercise()
-
-// Local state
-const showExercisePanel = ref(false)
-const selectedExercise = ref<any>(null)
-const isGuidedSession = ref(false)
 
 // Rep phase emoji/label
 const repPhaseEmoji = computed(() => {
@@ -191,16 +195,12 @@ function formatTime(seconds: number) {
 }
 
 function openExercisePanel(exercise: any) {
-  selectedExercise.value = exercise
-  isGuidedSession.value = false
-  showExercisePanel.value = true
+  openPanel(exercise)
 }
 
 function closeExercisePanel() {
   stopExercise()
-  showExercisePanel.value = false
-  selectedExercise.value = null
-  isGuidedSession.value = false
+  closePanel()
 }
 
 function startGuidedSession() {
