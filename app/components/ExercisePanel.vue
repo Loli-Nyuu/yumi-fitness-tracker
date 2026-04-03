@@ -71,11 +71,11 @@
             </p>
           </div>
 
-          <!-- Progress bar for current phase -->
-          <div v-if="timeRemaining > 0 && phase === 'active'" class="w-full max-w-xs mb-4">
+          <!-- Progress bar for current phase (smooth rAF animation) -->
+          <div v-if="phase === 'active'" class="w-full max-w-xs mb-4">
             <div class="h-2 rounded-full overflow-hidden" style="background: var(--surface-light)">
               <div class="h-full rounded-full" 
-                :style="{ width: phaseProgressPercent + '%', background: 'var(--primary)', transition: 'none' }"></div>
+                :style="{ width: phaseProgressMs + '%', background: 'var(--primary)' }"></div>
             </div>
             <p class="text-xs mt-1" style="color: var(--text-muted)">{{ timeRemaining }}s remaining</p>
           </div>
@@ -187,6 +187,7 @@ const {
   isPaused,
   countdownValue,
   sessionElapsed,
+  phaseProgressMs,
   sessionComplete,
   startExercise,
   pauseExercise,
@@ -194,12 +195,6 @@ const {
   stopExercise,
   skipRest,
 } = useAutoExercise()
-
-// Phase progress (decreasing from 100% to 0%)
-const phaseProgressPercent = computed(() => {
-  const total = 4 // phaseDurationSeconds
-  return timeRemaining.value > 0 ? (timeRemaining.value / total) * 100 : 0
-})
 
 // Rep phase emoji/label
 const repPhaseEmoji = computed(() => {

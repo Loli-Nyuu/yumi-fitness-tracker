@@ -161,23 +161,50 @@ export function useAutoExercise() {
   function clearAllTimers() {
     if (timerInterval) { clearInterval(timerInterval); timerInterval = null }
     if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null }
+    if (sessionTimer) { clearInterval(sessionTimer); sessionTimer = null }
+    if (progressRaf) { cancelAnimationFrame(progressRaf); progressRaf = null }
   }
 
-  /** Run a countdown that ticks every second, calling tickFn each second */
+  /** Run a countdown with smooth rAF progress bar */
   function runTimer(durationSeconds: number, tickFn: (remaining: number) => void, onComplete: () => void) {
+    const durationMs = durationSeconds * 1000
+    phaseDurationMs = durationMs
+    phaseStartTime = performance.now()
     timeRemaining.value = durationSeconds
     countdownValue.value = durationSeconds
+    phaseProgressMs.value = 100
     tickFn(timeRemaining.value)
 
-    timerInterval = setInterval(() => {
-      timeRemaining.value--
-      countdownValue.value = timeRemaining.value
-      tickFn(timeRemaining.value)
-      if (timeRemaining.value <= 0) {
-        clearAllTimers()
-        onComplete()
+    // Cancel any existing rAF
+    if (progressRaf) cancelAnimationFrame(progressRaf)
+    
+    // Start rAF loop for smooth progress
+    const updateProgress = (now: number) => {
+      const elapsed = now - phaseStartTime
+      const remaining = Math.max(0, durationMs - elapsed)
+      const remainingSecs = Math.ceil(remaining / 1000)
+      
+      // Update progress percentage
+      phaseProgressMs.value = (remaining / durationMs) * 100
+      
+      // Update second-precise values for display
+      if (remainingSecs !== timeRemaining.value) {
+        timeRemaining.value = remainingSecs
+        countdownValue.value = remainingSecs
+        tickFn(remainingSecs)
       }
-    }, 1000)
+      
+      if (remaining <= 0) {
+        clearAllTimers()
+        if (progressRaf) cancelAnimationFrame(progressRaf)
+        progressRaf = null
+        onComplete()
+      } else {
+        progressRaf = requestAnimationFrame(updateProgress)
+      }
+    }
+    
+    progressRaf = requestAnimationFrame(updateProgress)
   }
 
   // ── Progress Calculation ────────────────────────────────────────────────
@@ -543,6 +570,12 @@ export function useAutoExercise() {
   const countdownValue = ref(3)
   const sessionElapsed = ref(0)
   let sessionTimer: ReturnType<typeof setInterval> | null = null
+  
+  // Millisecond-precise phase progress (0-100)
+  const phaseProgressMs = ref(100)
+  let phaseStartTime = 0
+  let phaseDurationMs = 0
+  let progressRaf: number | null = null
 
   function startCountdown() {
     phase.value = 'countdown'
@@ -592,6 +625,7 @@ export function useAutoExercise() {
     isPaused,
     countdownValue,
     sessionElapsed,
+    phaseProgressMs,
     config: config,
 
     // Actions
