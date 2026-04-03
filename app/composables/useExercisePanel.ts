@@ -15,6 +15,8 @@ const isResting = ref(false)
 const restSeconds = ref(60)
 const restCountdown = ref(0)
 const sessionMessages = ref<string[]>([])
+const sessionComplete = ref(false)
+let restInterval: ReturnType<typeof setInterval> | null = null
 
 // WS connection for real-time trainer messages
 let wsSend: ReturnType<typeof useWebSocket>['send'] | null = null
@@ -86,10 +88,12 @@ export function useExercisePanel() {
     isResting.value = true
     restCountdown.value = restSeconds.value
     
-    const interval = setInterval(() => {
+    if (restInterval) clearInterval(restInterval)
+    restInterval = setInterval(() => {
       restCountdown.value--
       if (restCountdown.value <= 0) {
-        clearInterval(interval)
+        if (restInterval) clearInterval(restInterval)
+        restInterval = null
         endRest()
       }
     }, 1000)
@@ -102,6 +106,7 @@ export function useExercisePanel() {
       currentRep.value = 0
     } else {
       // Session complete
+      sessionComplete.value = true
       completeSession()
     }
   }
@@ -123,6 +128,18 @@ export function useExercisePanel() {
     }
   }
 
+  function skipRest() {
+    if (restInterval) clearInterval(restInterval)
+    restInterval = null
+    endRest()
+  }
+
+  function resetAfterComplete() {
+    sessionComplete.value = false
+    resetGuidedSession()
+    isGuidedSession.value = false
+  }
+
   function addSessionMessage(msg: string) {
     sessionMessages.value.push(msg)
     if (sessionMessages.value.length > 4) {
@@ -142,6 +159,7 @@ export function useExercisePanel() {
     restSeconds,
     restCountdown,
     sessionMessages,
+    sessionComplete,
     openExercisePanel,
     closeExercisePanel,
     startGuidedSession,
@@ -150,5 +168,7 @@ export function useExercisePanel() {
     endRest,
     completeSession,
     addSessionMessage,
+    skipRest,
+    resetAfterComplete,
   }
 }

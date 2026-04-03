@@ -63,9 +63,21 @@
         </div>
 
         <!-- GUIDED SESSION VIEW -->
-        <div v-else class="flex-1 flex flex-col items-center justify-center text-center">
+        <div v-else-if="!sessionComplete" class="flex-1 flex flex-col items-center justify-center text-center">
           <!-- Exercise name -->
           <h3 class="text-xl font-bold mb-6" style="color: var(--primary)">{{ selectedExercise?.name }}</h3>
+
+          <!-- Rest timer overlay -->
+          <div v-if="isResting" class="absolute inset-0 flex items-center justify-center" style="background: color-mix(in srgb, var(--surface) 95%, transparent)">
+            <div class="text-center">
+              <p class="text-sm mb-2" style="color: var(--text-muted)">Rest between sets</p>
+              <p class="text-6xl font-mono font-bold mb-4" style="color: var(--primary)">{{ restCountdown }}</p>
+              <button @click="skipRest" class="px-6 py-2 rounded-xl text-sm font-medium"
+                :style="{ background: 'var(--surface-light)', color: 'var(--text)' }">
+                Skip Rest
+              </button>
+            </div>
+          </div>
 
           <!-- Set/Rep display -->
           <div class="mb-6">
@@ -99,6 +111,39 @@
             End Session
           </button>
         </div>
+
+        <!-- SESSION COMPLETE VIEW -->
+        <div v-else class="flex-1 flex flex-col items-center justify-center text-center">
+          <!-- Celebration -->
+          <div class="mb-6">
+            <div class="text-6xl animate-bounce">💪</div>
+            <div class="text-4xl mt-2 animate-pulse">✨ 🍑 ✨</div>
+          </div>
+          
+          <h3 class="text-2xl font-bold mb-2" style="color: var(--primary)">Exercise Complete!</h3>
+          <p class="text-lg mb-4" style="color: var(--text)">Amazing work, Yuyu!</p>
+          
+          <!-- Stats -->
+          <div class="mb-6 p-4 rounded-xl" style="background: var(--surface-light)">
+            <p class="text-sm" style="color: var(--text-muted)">You completed</p>
+            <p class="text-3xl font-bold" style="color: var(--primary)">{{ totalSets }} sets × {{ targetReps }} reps</p>
+            <p class="text-sm mt-1" style="color: var(--text-muted)">of {{ selectedExercise?.name }}</p>
+          </div>
+          
+          <!-- Action buttons -->
+          <div class="flex flex-col gap-3 w-full max-w-xs">
+            <button @click="closeExercisePanel"
+              class="px-6 py-3 rounded-xl font-medium transition-all hover:scale-105"
+              :style="{ background: 'var(--surface-light)', color: 'var(--text-muted)' }">
+              Close
+            </button>
+            <button @click="resetAfterComplete"
+              class="px-6 py-3 rounded-xl font-semibold transition-all hover:scale-105"
+              :style="{ background: 'var(--primary)', color: 'var(--background)' }">
+              <Icon :name="icons.start" /> Do Another Exercise
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </Transition>
@@ -123,14 +168,19 @@ const {
   showExercisePanel,
   selectedExercise,
   isGuidedSession,
+  sessionComplete,
   currentSet,
   totalSets,
   currentRep,
   targetReps,
+  isResting,
+  restCountdown,
   sessionMessages,
   closeExercisePanel,
   startGuidedSession,
   completeRep,
+  skipRest,
+  resetAfterComplete,
 } = useExercisePanel()
 </script>
 
