@@ -557,7 +557,7 @@ export function useAutoExercise() {
   }
 
   function beginActivePhase() {
-    if (localConfig.value.mode === 'reps') {
+    if (config.value.mode === 'reps') {
       startRepsMode()
     } else {
       startTimedMode()
@@ -582,7 +582,7 @@ export function useAutoExercise() {
     progress,
     isPaused,
     countdownValue,
-    config: localConfig,
+    config: config,
 
     // Actions
     startExercise,

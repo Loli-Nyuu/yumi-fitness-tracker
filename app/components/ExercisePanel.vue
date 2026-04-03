@@ -59,15 +59,12 @@
           <!-- Timer / Rep counter -->
           <div class="mb-4">
             <p class="text-6xl font-mono font-bold" style="color: var(--primary)">
-              {{ mode === 'reps' ? `${currentRep}/${config?.reps?.repCount}` : formatTime(timeRemaining) }}
-            </p>
-            <p class="text-sm mt-1" style="color: var(--text-muted)">
-              {{ mode === 'reps' ? 'reps' : 'remaining' }}
+              {{ currentCue ? currentCue : (timeRemaining > 0 ? formatTime(timeRemaining) : `${currentRep}`) }}
             </p>
           </div>
 
           <!-- Set indicator -->
-          <p class="text-sm mb-4" style="color: var(--text-muted)">Set {{ currentSet }} of {{ config?.sets || 3 }}</p>
+          <p class="text-sm mb-4" style="color: var(--text-muted)">Set {{ currentSet }}</p>
 
           <!-- Current cue message -->
           <div v-if="currentCue" class="mb-6 p-4 rounded-xl animate-pulse" style="background: color-mix(in srgb, var(--primary) 15%, transparent)">
@@ -140,7 +137,7 @@
 <script setup lang="ts">
 import { getIcons } from '~/utils/theme-icons'
 import { useAutoExercise } from '~/composables/useAutoExercise'
-import type { RepsModeConfig, TimedModeConfig } from '~/types/exercise-config'
+import type { ExerciseConfig, RepsModeConfig, TimedModeConfig } from '~/types/exercise-config'
 
 const currentTheme = ref('yumi')
 const icons = computed(() => getIcons(currentTheme.value))
@@ -175,8 +172,6 @@ const {
 const showExercisePanel = ref(false)
 const selectedExercise = ref<any>(null)
 const isGuidedSession = ref(false)
-const mode = ref<'reps' | 'timed'>('reps')
-const config = ref<RepsModeConfig | TimedModeConfig | null>(null)
 
 // Rep phase emoji/label
 const repPhaseEmoji = computed(() => {
@@ -211,28 +206,43 @@ function closeExercisePanel() {
 function startGuidedSession() {
   isGuidedSession.value = true
   
-  // Determine exercise mode based on exercise type
-  const exerciseName = selectedExercise.value?.name || ''
+  const exerciseName = selectedExercise.value?.name || 'Exercise'
+  const exerciseId = selectedExercise.value?.id || 'unknown'
+  
+  let modeConfig: RepsModeConfig | TimedModeConfig
   
   if (exerciseName.includes('Sit') || exerciseName.includes('Plank') || exerciseName.includes('Hold')) {
-    // Timed exercise
-    mode.value = 'timed'
-    config.value = {
+    modeConfig = {
       mode: 'timed',
       holdDuration: 45,
       restDuration: 30,
     } as TimedModeConfig
   } else {
-    // Rep-based exercise
-    mode.value = 'reps'
-    config.value = {
+    modeConfig = {
       mode: 'reps',
       repCount: 12,
       pace: { up: 2, hold: 2, down: 2 },
     } as RepsModeConfig
   }
   
-  startExercise(config.value as any)
+  const fullConfig: ExerciseConfig = {
+    id: exerciseId,
+    name: exerciseName,
+    modeConfig,
+    common: {
+      sets: 3,
+      warmupSets: 0,
+      restBetweenSets: 60,
+    },
+    messages: {
+      startMessages: ['Let's go, Yuyu! 💪'],
+      duringMessages: [],
+      completionMessages: ['Amazing work! 🍑'],
+    },
+    version: 1,
+  }
+  
+  startExercise(fullConfig)
 }
 
 function resetAndClose() {
