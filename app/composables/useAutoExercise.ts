@@ -338,7 +338,13 @@ export function useAutoExercise() {
       }
       recalcProgress()
     }, () => {
-      // Countdown done — start first set, first rep
+      // Countdown done — start session timer and first set
+      sessionElapsed.value = 0
+      if (sessionTimer) clearInterval(sessionTimer)
+      sessionTimer = setInterval(() => {
+        sessionElapsed.value++
+      }, 1000)
+      
       currentSet.value = 1
       currentRep.value = 1
       currentRepPhase.value = 'up'
@@ -387,6 +393,13 @@ export function useAutoExercise() {
       }
       recalcProgress()
     }, () => {
+      // Countdown done — start session timer
+      sessionElapsed.value = 0
+      if (sessionTimer) clearInterval(sessionTimer)
+      sessionTimer = setInterval(() => {
+        sessionElapsed.value++
+      }, 1000)
+      
       currentSet.value = 1
       currentCue.value = 'Go! Hold it! 🔥'
       startTimedHold(cfg)
