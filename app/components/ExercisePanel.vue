@@ -72,17 +72,20 @@
           
           <h3 class="text-xl font-bold mb-2" style="color: var(--primary)">{{ selectedExercise?.name }}</h3>
           
-          <!-- Rep phase indicator -->
-          <div v-if="currentRepPhase && phase === 'active'" class="mb-4">
+          <!-- Rep phase indicator (Only for Reps mode) -->
+          <div v-if="currentRepPhase && phase === 'active' && config?.mode === 'reps'" class="mb-4">
             <div class="text-5xl mb-2 animate-bounce">{{ repPhaseEmoji }}</div>
             <p class="text-xl font-semibold" style="color: var(--primary)">{{ repPhaseLabel }}</p>
           </div>
 
           <!-- Timer / Rep counter -->
           <div class="mb-4">
-            <p v-if="phase === 'active' && currentRepPhase" class="text-2xl mb-2" style="color: var(--text-muted)">
-              Rep {{ currentRep }} / {{ 12 }}
+            <!-- Show Rep Counter only for Reps mode -->
+            <p v-if="phase === 'active' && config?.mode === 'reps'" class="text-2xl mb-2" style="color: var(--text-muted)">
+              Rep {{ currentRep }} / {{ config?.repCount || 12 }}
             </p>
+            
+            <!-- Show Main Timer/Cue -->
             <p class="text-6xl font-mono font-bold" style="color: var(--primary)">
               {{ phase === 'countdown' ? countdownValue : (currentCue || formatTime(timeRemaining)) }}
             </p>
@@ -211,6 +214,7 @@ const {
   sessionElapsed,
   phaseProgressMs,
   sessionComplete,
+  config,
   startExercise,
   pauseExercise,
   resumeExercise,
@@ -257,6 +261,9 @@ function startGuidedSession() {
   const ex = selectedExercise.value
   if (!ex) return
 
+  console.log('[ExercisePanel] Exercise pattern:', ex.pattern)
+  console.log('[ExercisePanel] Exercise defaults:', ex.defaultsJson)
+
   // Parse defaults from the exercise data
   let defaults = {}
   try {
@@ -272,6 +279,7 @@ function startGuidedSession() {
 
   // Pattern-specific config
   if (ex.pattern === 'timed') {
+    console.log('[ExercisePanel] Starting TIMED session')
     startExercise({
       mode: 'timed',
       holdDurationSeconds: defaults.holdDurationSeconds || 45,
@@ -279,6 +287,7 @@ function startGuidedSession() {
       ...baseConfig,
     } as any)
   } else {
+    console.log('[ExercisePanel] Starting REPS session')
     // Default to reps
     const phases = defaults.phaseDurations || { concentric: 2, isometric: 2, eccentric: 2 }
     startExercise({
