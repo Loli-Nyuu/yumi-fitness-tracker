@@ -51,15 +51,18 @@
           <h3 class="text-xl font-bold mb-2" style="color: var(--primary)">{{ selectedExercise?.name }}</h3>
           
           <!-- Rep phase indicator -->
-          <div v-if="currentRepPhase" class="mb-4">
-            <div class="text-4xl mb-2">{{ repPhaseEmoji }}</div>
-            <p class="text-lg font-semibold" style="color: var(--primary)">{{ repPhaseLabel }}</p>
+          <div v-if="currentRepPhase && phase === 'active'" class="mb-4">
+            <div class="text-5xl mb-2 animate-bounce">{{ repPhaseEmoji }}</div>
+            <p class="text-xl font-semibold" style="color: var(--primary)">{{ repPhaseLabel }}</p>
           </div>
 
           <!-- Timer / Rep counter -->
           <div class="mb-4">
+            <p v-if="phase === 'active' && currentRepPhase" class="text-2xl mb-2" style="color: var(--text-muted)">
+              Rep {{ currentRep }} / {{ 12 }}
+            </p>
             <p class="text-6xl font-mono font-bold" style="color: var(--primary)">
-              {{ currentCue ? currentCue : (timeRemaining > 0 ? formatTime(timeRemaining) : `${currentRep}`) }}
+              {{ phase === 'countdown' ? countdownValue : (currentCue || formatTime(timeRemaining)) }}
             </p>
           </div>
 
@@ -225,7 +228,7 @@ function startGuidedSession() {
       mode: 'reps',
       repCount: 12,
       setCount: 3,
-      phaseDurationSeconds: 2,
+      phaseDurationSeconds: 4,
       restSeconds: 60,
       countdownSeconds: 3,
     } as any)

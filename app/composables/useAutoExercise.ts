@@ -166,10 +166,12 @@ export function useAutoExercise() {
   /** Run a countdown that ticks every second, calling tickFn each second */
   function runTimer(durationSeconds: number, tickFn: (remaining: number) => void, onComplete: () => void) {
     timeRemaining.value = durationSeconds
+    countdownValue.value = durationSeconds
     tickFn(timeRemaining.value)
 
     timerInterval = setInterval(() => {
       timeRemaining.value--
+      countdownValue.value = timeRemaining.value
       tickFn(timeRemaining.value)
       if (timeRemaining.value <= 0) {
         clearAllTimers()
