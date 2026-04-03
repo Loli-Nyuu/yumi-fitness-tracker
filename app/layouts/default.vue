@@ -95,6 +95,8 @@
 
     <!-- Global Breathing Panel -->
     <BreathingPanel />
+    <!-- Global Exercise Panel -->
+    <ExercisePanel />
   </div>
 </template>
 

@@ -29,6 +29,7 @@
 
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       <div v-for="exercise in filtered" :key="exercise.id"
+        @click="openExercisePanel(exercise)"
         class="bg-card p-5 hover:glow-primary transition-all cursor-pointer">
         <!-- GIF Preview -->
         <div v-if="exercise.gifUrl" class="mb-3 rounded-lg overflow-hidden aspect-video flex items-center justify-center" :style="{ background: 'var(--surface-light)', borderRadius: 'var(--radius-sm)' }">
@@ -60,7 +61,11 @@
 </template>
 
 <script setup lang="ts">
+import { getIcons } from '~/utils/theme-icons'
+import { useExercisePanel } from '~/composables/useExercisePanel'
+
 const { data, pending } = useFetch('/api/exercises')
+const { openExercisePanel } = useExercisePanel()
 
 const filterCategory = ref('')
 const filterPreference = ref('')
