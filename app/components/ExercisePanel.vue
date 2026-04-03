@@ -48,6 +48,11 @@
 
         <!-- ACTIVE EXERCISE VIEW -->
         <div v-else-if="phase === 'active'" class="flex-1 flex flex-col items-center justify-center text-center">
+          <!-- Session timer at top -->
+          <div class="absolute top-6 right-6 px-3 py-1 rounded-lg text-sm font-mono" style="background: var(--surface-light); color: var(--text-muted)">
+            {{ formatSessionTime(sessionElapsed) }}
+          </div>
+          
           <h3 class="text-xl font-bold mb-2" style="color: var(--primary)">{{ selectedExercise?.name }}</h3>
           
           <!-- Rep phase indicator -->
@@ -64,6 +69,15 @@
             <p class="text-6xl font-mono font-bold" style="color: var(--primary)">
               {{ phase === 'countdown' ? countdownValue : (currentCue || formatTime(timeRemaining)) }}
             </p>
+          </div>
+
+          <!-- Progress bar for current phase -->
+          <div v-if="timeRemaining > 0" class="w-full max-w-xs mb-4">
+            <div class="h-2 rounded-full overflow-hidden" style="background: var(--surface-light)">
+              <div class="h-full rounded-full transition-all duration-1000" 
+                :style="{ width: ((4 - timeRemaining) / 4 * 100) + '%', background: 'var(--primary)' }"></div>
+            </div>
+            <p class="text-xs mt-1" style="color: var(--text-muted)">{{ timeRemaining }}s remaining</p>
           </div>
 
           <!-- Set indicator -->
@@ -172,6 +186,7 @@ const {
   currentCue,
   isPaused,
   countdownValue,
+  sessionElapsed,
   sessionComplete,
   startExercise,
   pauseExercise,
@@ -195,6 +210,12 @@ function formatTime(seconds: number) {
   const m = Math.floor(seconds / 60)
   const s = seconds % 60
   return m > 0 ? `${m}:${s.toString().padStart(2, '0')}` : `${s}`
+}
+
+function formatSessionTime(seconds: number) {
+  const m = Math.floor(seconds / 60)
+  const s = seconds % 60
+  return `${m}:${s.toString().padStart(2, '0')}`
 }
 
 function openExercisePanel(exercise: any) {

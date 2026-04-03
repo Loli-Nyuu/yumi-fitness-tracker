@@ -540,6 +540,8 @@ export function useAutoExercise() {
   // ── Return ─────────────────────────────────────────────────────────────
 
   const countdownValue = ref(3)
+  const sessionElapsed = ref(0)
+  let sessionTimer: ReturnType<typeof setInterval> | null = null
 
   function startCountdown() {
     phase.value = 'countdown'
@@ -556,6 +558,13 @@ export function useAutoExercise() {
   }
 
   function beginActivePhase() {
+    // Start session timer
+    sessionElapsed.value = 0
+    if (sessionTimer) clearInterval(sessionTimer)
+    sessionTimer = setInterval(() => {
+      sessionElapsed.value++
+    }, 1000)
+    
     if (config.value!.mode === 'reps') {
       startReps(config.value as any)
     } else {
@@ -581,6 +590,7 @@ export function useAutoExercise() {
     progress,
     isPaused,
     countdownValue,
+    sessionElapsed,
     config: config,
 
     // Actions
