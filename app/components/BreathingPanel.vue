@@ -63,11 +63,24 @@
         </div>
 
         <!-- STARTED: Visual guide -->
-        <div v-else-if="!isPaused" class="flex-1 flex flex-col items-center justify-center text-center">
+        <div v-else-if="!isPaused && !sessionComplete" class="flex-1 flex flex-col items-center justify-center text-center">
           <!-- Motivation message overlay -->
-          <div v-if="motivationMsg" class="mb-4 px-4 py-2 rounded-xl animate-bounce"
+          <div v-if="motivationMsg" class="mb-4 px-4 py-2 rounded-xl"
             style="background: color-mix(in srgb, var(--primary) 20%, transparent); color: var(--primary)">
             <p class="text-sm font-medium">{{ motivationMsg }}</p>
+          </div>
+
+          <!-- Message history (last 3 messages, excluding current) -->
+          <div v-if="motivationHistory.length > 1" class="mb-4 w-full max-w-xs space-y-1">
+            <div v-for="(msg, idx) in motivationHistory.slice(1).reverse()" :key="idx" 
+              class="text-xs p-2 rounded transition-all"
+              :style="{
+                background: 'color-mix(in srgb, var(--primary) 8%, transparent)',
+                color: 'var(--text-muted)',
+                opacity: 0.4 + ((motivationHistory.length - 2 - idx) / Math.max(1, motivationHistory.length - 2)) * 0.4,
+              }">
+              {{ msg }}
+            </div>
           </div>
 
           <!-- Lung circle animation -->
@@ -117,6 +130,40 @@
               class="px-6 py-2.5 rounded-xl font-medium transition-all hover:scale-105"
               :style="{ background: 'color-mix(in srgb, var(--danger) 20%, transparent)', color: 'var(--danger)' }">
               <Icon :name="icons.stop" /> Stop
+            </button>
+          </div>
+        </div>
+
+        <!-- SESSION COMPLETE: Celebration screen -->
+        <div v-else-if="sessionComplete" class="flex-1 flex flex-col items-center justify-center text-center">
+          <!-- Celebration animation -->
+          <div class="mb-6">
+            <div class="text-6xl animate-bounce">🍑</div>
+            <div class="text-4xl mt-2 animate-pulse">✨ 💪 ✨</div>
+          </div>
+          
+          <h3 class="text-2xl font-bold mb-2" style="color: var(--primary)">Session Complete!</h3>
+          <p class="text-lg mb-4" style="color: var(--text)">{{ completionMessage }}</p>
+          
+          <!-- Stats -->
+          <div class="mb-6 p-4 rounded-xl" style="background: var(--surface-light)">
+            <p class="text-sm" style="color: var(--text-muted)">You completed</p>
+            <p class="text-3xl font-bold" style="color: var(--primary)">{{ breathRounds - 1 }} rounds</p>
+            <p class="text-sm" style="color: var(--text-muted)">of {{ selectedPattern?.name }}</p>
+            <p class="text-xs mt-2" style="color: var(--text-muted)">{{ formatDuration(breathElapsed) }} total</p>
+          </div>
+          
+          <!-- Action buttons -->
+          <div class="flex flex-col gap-3 w-full max-w-xs">
+            <button @click="closeBreathingPanel"
+              class="px-6 py-3 rounded-xl font-medium transition-all hover:scale-105"
+              :style="{ background: 'var(--surface-light)', color: 'var(--text-muted)' }">
+              Close
+            </button>
+            <button @click="resetForNewSession"
+              class="px-6 py-3 rounded-xl font-semibold transition-all hover:scale-105"
+              :style="{ background: 'var(--primary)', color: 'var(--background)' }">
+              <Icon :name="icons.start" /> New Session
             </button>
           </div>
         </div>
@@ -178,6 +225,8 @@ const {
   selectedRounds,
   customRounds,
   activeBreathing,
+  sessionComplete,
+  completionMessage,
   breathPhase,
   breathTimer,
   breathRounds,
@@ -185,6 +234,7 @@ const {
   autoStartDelay,
   countdownSeconds,
   motivationMsg,
+  motivationHistory,
   breathCircleSize,
   breathCircleTransition,
   breathCircleBg,
@@ -205,6 +255,11 @@ const {
 const isPaused = ref(false)
 const resumeCountdown = ref(0)
 let resumeInterval: ReturnType<typeof setInterval> | null = null
+
+function resetForNewSession() {
+  // Close current session and go back to pattern selection
+  closeBreathingPanel()
+}
 
 function togglePause() {
   if (isPaused.value) {

@@ -44,6 +44,8 @@ const selectedPattern = ref<any>(null)
 const selectedRounds = ref(5)
 const customRounds = ref('')
 const activeBreathing = ref<any>(null)
+const sessionComplete = ref(false)
+const completionMessage = ref('')
 const breathPhase = ref('inhale')
 const breathTimer = ref(0)
 const breathRounds = ref(1)
@@ -56,6 +58,7 @@ let countdownInterval: ReturnType<typeof setInterval> | null = null
 
 let breathInterval: ReturnType<typeof setInterval> | null = null
 let breathElapsedInterval: ReturnType<typeof setInterval> | null = null
+let isSessionComplete = false
 
 // Visual circle state
 const breathCircleSize = ref(25)
@@ -66,6 +69,7 @@ const breathCircleOpacity = ref(0.5)
 // Motivation state
 const motivationMsg = ref('')
 let motivationTimeout: ReturnType<typeof setTimeout> | null = null
+const motivationHistory = ref<string[]>([])
 
 function updateBreathCircle(phase: string, durationSec: number) {
   const dur = durationSec > 0 ? durationSec : 1
@@ -150,6 +154,10 @@ function closeBreathingPanel() {
   showBreathingPanel.value = false
   selectedPattern.value = null
   customRounds.value = ''
+  sessionComplete.value = false
+  completionMessage.value = ''
+  motivationHistory.value = []
+  isSessionComplete = false
 }
 
 function startBreathingSession() {
@@ -159,6 +167,7 @@ function startBreathingSession() {
   activeBreathing.value = pattern
   breathRounds.value = 1
   breathElapsed.value = 0
+  isSessionComplete = false
   
   sendProgress({
     event: 'breathing:sessionStarted',
@@ -193,8 +202,10 @@ function startBreathingSession() {
   })
 
   breathInterval = setInterval(() => {
+    if (isSessionComplete) return // Don't process if session is complete
     breathTimer.value--
     if (breathTimer.value <= 0) {
+      if (isSessionComplete) return // Double-check before advancing
       phaseIndex = (phaseIndex + 1) % phases.length
       if (phaseIndex === 0) {
         breathRounds.value++
@@ -221,8 +232,20 @@ function startBreathingSession() {
 }
 
 async function stopBreathing() {
-  if (breathInterval) clearInterval(breathInterval)
-  if (breathElapsedInterval) clearInterval(breathElapsedInterval)
+  // Prevent multiple calls
+  if (isSessionComplete) return
+  isSessionComplete = true
+  
+  // Clear intervals FIRST to prevent multiple calls
+  if (breathInterval) {
+    clearInterval(breathInterval)
+    breathInterval = null
+  }
+  if (breathElapsedInterval) {
+    clearInterval(breathElapsedInterval)
+    breathElapsedInterval = null
+  }
+  
   const pattern = activeBreathing.value
   if (pattern && breathElapsed.value > 0) {
     await $fetch('/api/breathing', { method: 'POST', body: { pattern: pattern.name, duration: breathElapsed.value, rounds: breathRounds.value } })
@@ -232,7 +255,7 @@ async function stopBreathing() {
       data: { pattern: pattern.name, duration: breathElapsed.value, rounds: breathRounds.value },
     })
   }
-  activeBreathing.value = null
+  // Don't clear activeBreathing here — let the celebration screen show first
 }
 
 // Pause/resume functionality
@@ -357,11 +380,20 @@ export function useBreathingPanel() {
                   autoStartDelay: msg.data.autoStartDelay,
                 })
               }
+            } else if (msg.event === 'breathing:sessionCompleted') {
+              console.log('[Breathing] Session completed!')
+              sessionComplete.value = true
+              completionMessage.value = msg.data?.message || `Amazing work, Yuyu! 🍑✨`
+              stopBreathing() // Clean up intervals
             } else if (msg.event === 'breathing:motivation' && msg.data?.message) {
               console.log('[Breathing] Motivation message:', msg.data.message)
               motivationMsg.value = msg.data.message
               if (motivationTimeout) clearTimeout(motivationTimeout)
               motivationTimeout = setTimeout(() => { motivationMsg.value = '' }, 5000)
+              
+              // Add to history (keep last 4)
+              motivationHistory.value.unshift(msg.data.message)
+              if (motivationHistory.value.length > 4) motivationHistory.value.pop()
             }
           } catch (e) {
             console.error('[Breathing] Error parsing WS message:', e)
@@ -386,6 +418,8 @@ export function useBreathingPanel() {
     selectedRounds,
     customRounds,
     activeBreathing,
+    sessionComplete,
+    completionMessage,
     breathPhase,
     breathTimer,
     breathRounds,
@@ -393,6 +427,7 @@ export function useBreathingPanel() {
     autoStartDelay,
     countdownSeconds,
     motivationMsg,
+    motivationHistory,
     breathCircleSize,
     breathCircleTransition,
     breathCircleBg,
