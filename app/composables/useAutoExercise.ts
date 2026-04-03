@@ -426,9 +426,6 @@ export function useAutoExercise() {
     } else {
       startTimed(exerciseConfig)
     }
-    
-    // Start with countdown
-    startCountdown()
   }
 
   /** Pause the current exercise, preserving state for resume */
@@ -557,10 +554,10 @@ export function useAutoExercise() {
   }
 
   function beginActivePhase() {
-    if (config.value.mode === 'reps') {
-      startRepsMode()
+    if (config.value!.mode === 'reps') {
+      startReps(config.value as any)
     } else {
-      startTimedMode()
+      startTimed(config.value as any)
     }
   }
 
