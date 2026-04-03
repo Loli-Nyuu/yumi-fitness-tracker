@@ -101,6 +101,11 @@
 
         <!-- REST VIEW -->
         <div v-else-if="phase === 'rest'" class="flex-1 flex flex-col items-center justify-center text-center">
+          <!-- Session timer at top -->
+          <div class="absolute top-6 right-6 px-3 py-1 rounded-lg text-sm font-mono" style="background: var(--surface-light); color: var(--text-muted)">
+            {{ formatSessionTime(sessionElapsed) }}
+          </div>
+          
           <div class="text-6xl mb-4 animate-pulse">💤</div>
           <h3 class="text-2xl font-bold mb-2" style="color: var(--primary)">Rest Time!</h3>
           <p class="text-6xl font-mono font-bold my-4" style="color: var(--primary)">{{ formatTime(timeRemaining) }}</p>

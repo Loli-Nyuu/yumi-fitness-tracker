@@ -435,7 +435,21 @@ export function useAutoExercise() {
   }
 
   // ── Session Finish ─────────────────────────────────────────────────────
+  function handleRestComplete() {
 
+    const cfg = config.value!
+    currentSet.value++
+    currentRep.value = 1
+    currentRepPhase.value = 'up'
+    if (cfg.mode === 'reps') {
+      currentCue.value = `Set ${currentSet.value}! Let's go! ${REP_CUES.up}`
+      setPhase('active', currentCue.value)
+      runTimer(cfg.phaseDurationSeconds, () => recalcProgress(), advanceRepPhase)
+    } else {
+      currentCue.value = `Set ${currentSet.value}! Hold it!`  
+      startTimedHold(cfg)
+    }
+  }
   function finishSession() {
     clearAllTimers()
     progress.value = 100
