@@ -161,7 +161,7 @@ export function useAutoExercise() {
   function clearAllTimers() {
     if (timerInterval) { clearInterval(timerInterval); timerInterval = null }
     if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null }
-    if (sessionTimer) { clearInterval(sessionTimer); sessionTimer = null }
+    // Don't clear sessionTimer - it should run for the whole session
     if (progressRaf) { cancelAnimationFrame(progressRaf); progressRaf = null }
   }
 
@@ -562,6 +562,8 @@ export function useAutoExercise() {
   /** Stop the exercise entirely — resets to idle */
   function stopExercise() {
     clearAllTimers()
+    // Clear session timer on stop
+    if (sessionTimer) { clearInterval(sessionTimer); sessionTimer = null }
     isPaused.value = false
     setPhase('idle', '')
     progress.value = 0
