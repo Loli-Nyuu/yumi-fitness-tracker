@@ -244,10 +244,11 @@ function startGuidedSession() {
     // Timed exercise
     startExercise({
       mode: 'timed',
-      holdDuration: 45,
-      restDuration: 30,
-      countdownSeconds: 3,
+      holdDurationSeconds: 45,
       setCount: 3,
+      restSeconds: 60,
+      countdownSeconds: 3,
+      cueIntervalSeconds: 10,
     } as any)
   } else {
     // Rep-based exercise
