@@ -421,6 +421,7 @@ export function useAutoExercise() {
     currentCue.value = ''
     progress.value = 0
     isPaused.value = false
+    sessionElapsed.value = 0
     config.value = exerciseConfig
 
     if (exerciseConfig.mode === 'reps') {

@@ -72,10 +72,10 @@
           </div>
 
           <!-- Progress bar for current phase -->
-          <div v-if="timeRemaining > 0" class="w-full max-w-xs mb-4">
+          <div v-if="timeRemaining > 0 && phase === 'active'" class="w-full max-w-xs mb-4">
             <div class="h-2 rounded-full overflow-hidden" style="background: var(--surface-light)">
-              <div class="h-full rounded-full transition-all duration-1000" 
-                :style="{ width: ((4 - timeRemaining) / 4 * 100) + '%', background: 'var(--primary)' }"></div>
+              <div class="h-full rounded-full" 
+                :style="{ width: phaseProgressPercent + '%', background: 'var(--primary)', transition: 'none' }"></div>
             </div>
             <p class="text-xs mt-1" style="color: var(--text-muted)">{{ timeRemaining }}s remaining</p>
           </div>
@@ -194,6 +194,12 @@ const {
   stopExercise,
   skipRest,
 } = useAutoExercise()
+
+// Phase progress (decreasing from 100% to 0%)
+const phaseProgressPercent = computed(() => {
+  const total = 4 // phaseDurationSeconds
+  return timeRemaining.value > 0 ? (timeRemaining.value / total) * 100 : 0
+})
 
 // Rep phase emoji/label
 const repPhaseEmoji = computed(() => {
