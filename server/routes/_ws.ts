@@ -2,6 +2,13 @@ import type { Peer } from 'crossws'
 
 const peers = new Map<string, Peer>()
 
+export function broadcastWS(data: any) {
+  const message = JSON.stringify(data)
+  for (const [, peer] of peers) {
+    try { peer.send(message) } catch {}
+  }
+}
+
 export default defineWebSocketHandler({
   open(peer) {
     console.log(`[WS] Connected: ${peer.id}`)
@@ -19,34 +26,6 @@ export default defineWebSocketHandler({
     }
 
     console.log(`[WS] Message from ${peer.id}:`, msg?.event)
-
-    switch (msg.event) {
-      case 'breathing:sessionStarted': {
-        console.log(`[WS] Breathing started: ${msg.data?.pattern}`)
-        break
-      }
-
-      case 'breathing:roundProgress': {
-        const { currentRound, totalRounds } = msg.data || {}
-        console.log(`[WS] Breathing round: ${currentRound}/${totalRounds}`)
-        break
-      }
-
-      case 'breathing:sessionCompleted': {
-        console.log(`[WS] Breathing completed: ${msg.data?.pattern}`)
-        break
-      }
-
-      case 'breathing:paused': {
-        console.log(`[WS] Breathing paused`)
-        break
-      }
-
-      case 'breathing:resumed': {
-        console.log(`[WS] Breathing resumed`)
-        break
-      }
-    }
   },
 
   close(peer) {
@@ -54,3 +33,7 @@ export default defineWebSocketHandler({
     peers.delete(peer.id)
   },
 })
+
+// Export for use by other modules - this won't work across Nitro modules
+// but we'll use a workaround in the trigger endpoint
+;(globalThis as any).__wsPeers = peers
