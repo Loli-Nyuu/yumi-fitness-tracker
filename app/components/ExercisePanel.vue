@@ -204,6 +204,7 @@ function closeExercisePanel() {
 }
 
 function startGuidedSession() {
+  console.log('[ExercisePanel] startGuidedSession called')
   isGuidedSession.value = true
   
   const exerciseName = selectedExercise.value?.name || 'Exercise'
