@@ -208,42 +208,28 @@ function startGuidedSession() {
   isGuidedSession.value = true
   
   const exerciseName = selectedExercise.value?.name || 'Exercise'
-  const exerciseId = selectedExercise.value?.id || 'unknown'
   
-  let modeConfig: RepsModeConfig | TimedModeConfig
-  
+  // Create config in the format useAutoExercise expects
   if (exerciseName.includes('Sit') || exerciseName.includes('Plank') || exerciseName.includes('Hold')) {
-    modeConfig = {
+    // Timed exercise
+    startExercise({
       mode: 'timed',
       holdDuration: 45,
       restDuration: 30,
-    } as TimedModeConfig
+      countdownSeconds: 3,
+      setCount: 3,
+    } as any)
   } else {
-    modeConfig = {
+    // Rep-based exercise
+    startExercise({
       mode: 'reps',
       repCount: 12,
-      pace: { up: 2, hold: 2, down: 2 },
-    } as RepsModeConfig
+      setCount: 3,
+      phaseDurationSeconds: 2,
+      restSeconds: 60,
+      countdownSeconds: 3,
+    } as any)
   }
-  
-  const fullConfig: ExerciseConfig = {
-    id: exerciseId,
-    name: exerciseName,
-    modeConfig,
-    common: {
-      sets: 3,
-      warmupSets: 0,
-      restBetweenSets: 60,
-    },
-    messages: {
-      startMessages: ['Let us go, Yuyu! 💪'],
-      duringMessages: [],
-      completionMessages: ['Amazing work! 🍑'],
-    },
-    version: 1,
-  }
-  
-  startExercise(fullConfig)
 }
 
 function resetAndClose() {
