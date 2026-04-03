@@ -235,7 +235,7 @@ function startGuidedSession() {
       restBetweenSets: 60,
     },
     messages: {
-      startMessages: ['Let's go, Yuyu! 💪'],
+      startMessages: ['Let us go, Yuyu! 💪'],
       duringMessages: [],
       completionMessages: ['Amazing work! 🍑'],
     },
