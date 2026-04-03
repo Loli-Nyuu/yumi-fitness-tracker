@@ -50,6 +50,10 @@ export function useDB() {
         equipment TEXT NOT NULL DEFAULT 'none',
         preference TEXT NOT NULL DEFAULT 'untested',
         notes TEXT DEFAULT '',
+        pattern TEXT NOT NULL DEFAULT 'reps',
+        defaults_json TEXT DEFAULT '{}',
+        tags_json TEXT DEFAULT '{}',
+        form_cues_json TEXT DEFAULT '{}',
         created_at TEXT NOT NULL DEFAULT (datetime('now'))
       );
 

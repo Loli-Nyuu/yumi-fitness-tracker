@@ -31,6 +31,23 @@
             <p class="text-sm italic" style="color: var(--primary)">{{ selectedExercise.kidFriendlyTip }}</p>
           </div>
 
+          <!-- Form Cues -->
+          <div v-if="selectedExercise?.formCuesJson" class="mb-4">
+            <h3 class="text-sm font-semibold mb-2" style="color: var(--text-muted)">Yumi's Form Tips</h3>
+            <ul class="space-y-2">
+              <li v-for="(cue, idx) in JSON.parse(selectedExercise.formCuesJson)" :key="idx" class="text-sm flex items-start gap-2">
+                <span style="color: var(--primary)">✓</span>
+                <span style="color: var(--text)">{{ cue.text }}</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Pattern Badge -->
+          <div class="flex justify-center mb-6">
+            <span v-if="selectedExercise?.pattern === 'timed'" class="px-3 py-1 text-xs rounded-full font-medium" style="background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent)">⏱️ Timed Hold</span>
+            <span v-else class="px-3 py-1 text-xs rounded-full font-medium" style="background: color-mix(in srgb, var(--primary) 15%, transparent); color: var(--primary)">🔄 Rep-based</span>
+          </div>
+
           <button @click="startGuidedSession"
             class="mt-auto w-full py-3 rounded-xl font-semibold transition-all hover:scale-105"
             :style="{ background: 'var(--primary)', color: 'var(--background)' }">
@@ -237,28 +254,38 @@ function startGuidedSession() {
   console.log('[ExercisePanel] startGuidedSession called')
   isGuidedSession.value = true
   
-  const exerciseName = selectedExercise.value?.name || 'Exercise'
-  
-  // Create config in the format useAutoExercise expects
-  if (exerciseName.includes('Sit') || exerciseName.includes('Plank') || exerciseName.includes('Hold')) {
-    // Timed exercise
+  const ex = selectedExercise.value
+  if (!ex) return
+
+  // Parse defaults from the exercise data
+  let defaults = {}
+  try {
+    defaults = JSON.parse(ex.defaultsJson || '{}')
+  } catch {}
+
+  // Base config
+  const baseConfig = {
+    setCount: defaults.setCount || 3,
+    restSeconds: defaults.restBetweenSets || 60,
+    countdownSeconds: defaults.countdownSeconds || 5,
+  }
+
+  // Pattern-specific config
+  if (ex.pattern === 'timed') {
     startExercise({
       mode: 'timed',
-      holdDurationSeconds: 45,
-      setCount: 3,
-      restSeconds: 60,
-      countdownSeconds: 3,
+      holdDurationSeconds: defaults.holdDurationSeconds || 45,
       cueIntervalSeconds: 10,
+      ...baseConfig,
     } as any)
   } else {
-    // Rep-based exercise
+    // Default to reps
+    const phases = defaults.phaseDurations || { concentric: 2, isometric: 2, eccentric: 2 }
     startExercise({
       mode: 'reps',
-      repCount: 12,
-      setCount: 3,
-      phaseDurationSeconds: 4,
-      restSeconds: 60,
-      countdownSeconds: 3,
+      repCount: defaults.repCount || 12,
+      phaseDurationSeconds: phases.concentric + phases.isometric + phases.eccentric,
+      ...baseConfig,
     } as any)
   }
 }

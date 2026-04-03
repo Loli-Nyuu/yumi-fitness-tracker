@@ -28,6 +28,13 @@ export const exercises = sqliteTable('exercises', {
   equipment: text('equipment').notNull().default('none'),
   preference: text('preference').notNull().default('untested'),
   notes: text('notes').default(''),
+  
+  // NEW: Exercise Pattern and Defaults
+  pattern: text('pattern').notNull().default('reps'), // reps, timed, interval
+  defaultsJson: text('defaults_json').default('{}'), // JSON string for defaults
+  tagsJson: text('tags_json').default('{}'), // JSON string for tags
+  formCuesJson: text('form_cues_json').default('{}'), // JSON string for cues
+  
   createdAt: text('created_at').notNull().default("datetime('now')"),
 })
 
