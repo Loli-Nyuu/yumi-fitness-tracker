@@ -20,41 +20,17 @@
             {{ selectedExercise?.category === 'glutes' ? '🍑' : selectedExercise?.category === 'legs' ? '🦵' : '💪' }}
           </div>
 
-          <!-- Title & category -->
           <h2 class="text-2xl font-bold mb-1" style="color: var(--primary)">{{ selectedExercise?.name }}</h2>
-          <p class="text-sm mb-4" style="color: var(--text-muted)">
-            {{ selectedExercise?.category }} · {{ selectedExercise?.musclePrimary }}
-          </p>
+          <p class="text-sm mb-4" style="color: var(--text-muted)">{{ selectedExercise?.category }} · {{ selectedExercise?.musclePrimary }}</p>
 
-          <!-- Description -->
           <div class="mb-4 p-4 rounded-xl" style="background: var(--surface-light)">
             <p class="text-sm" style="color: var(--text)">{{ selectedExercise?.description }}</p>
           </div>
 
-          <!-- Kid-friendly tip -->
           <div v-if="selectedExercise?.kidFriendlyTip" class="mb-4 p-3 rounded-xl" style="background: color-mix(in srgb, var(--primary) 10%, transparent)">
             <p class="text-sm italic" style="color: var(--primary)">{{ selectedExercise.kidFriendlyTip }}</p>
           </div>
 
-          <!-- Tags -->
-          <div class="flex flex-wrap gap-2 mb-6">
-            <span v-if="selectedExercise?.isAnkleSafe" class="px-2 py-1 text-xs rounded-full" style="background: color-mix(in srgb, var(--success) 15%, transparent); color: var(--success)">🦶 Ankle Safe</span>
-            <span class="px-2 py-1 text-xs rounded-full" style="background: var(--surface-light); color: var(--text-muted)">{{ selectedExercise?.equipment }}</span>
-            <span class="px-2 py-1 text-xs rounded-full" style="background: var(--surface-light); color: var(--text-muted)">{{ selectedExercise?.preference }}</span>
-          </div>
-
-          <!-- Form cues -->
-          <div v-if="selectedExercise?.formCues?.length" class="mb-6">
-            <h3 class="text-sm font-semibold mb-2" style="color: var(--text-muted)">Form Cues</h3>
-            <ul class="space-y-1">
-              <li v-for="(cue, idx) in selectedExercise.formCues" :key="idx" class="text-sm flex items-start gap-2">
-                <span style="color: var(--primary)">✓</span>
-                <span style="color: var(--text)">{{ cue }}</span>
-              </li>
-            </ul>
-          </div>
-
-          <!-- Start button -->
           <button @click="startGuidedSession"
             class="mt-auto w-full py-3 rounded-xl font-semibold transition-all hover:scale-105"
             :style="{ background: 'var(--primary)', color: 'var(--background)' }">
@@ -62,85 +38,97 @@
           </button>
         </div>
 
-        <!-- GUIDED SESSION VIEW -->
-        <div v-else-if="!sessionComplete" class="flex-1 flex flex-col items-center justify-center text-center">
-          <!-- Exercise name -->
-          <h3 class="text-xl font-bold mb-6" style="color: var(--primary)">{{ selectedExercise?.name }}</h3>
+        <!-- COUNTDOWN VIEW -->
+        <div v-else-if="phase === 'countdown'" class="flex-1 flex flex-col items-center justify-center text-center">
+          <div class="text-6xl mb-4 animate-bounce">🍑</div>
+          <h3 class="text-2xl font-bold mb-2" style="color: var(--primary)">Get Ready!</h3>
+          <p class="text-sm mb-6" style="color: var(--text-muted)">{{ selectedExercise?.name }}</p>
+          <p class="text-7xl font-mono font-bold" style="color: var(--primary)">{{ countdownValue }}</p>
+        </div>
 
-          <!-- Rest timer overlay -->
-          <div v-if="isResting" class="absolute inset-0 flex items-center justify-center" style="background: color-mix(in srgb, var(--surface) 95%, transparent)">
-            <div class="text-center">
-              <p class="text-sm mb-2" style="color: var(--text-muted)">Rest between sets</p>
-              <p class="text-6xl font-mono font-bold mb-4" style="color: var(--primary)">{{ restCountdown }}</p>
-              <button @click="skipRest" class="px-6 py-2 rounded-xl text-sm font-medium"
-                :style="{ background: 'var(--surface-light)', color: 'var(--text)' }">
-                Skip Rest
-              </button>
-            </div>
+        <!-- ACTIVE EXERCISE VIEW -->
+        <div v-else-if="phase === 'active'" class="flex-1 flex flex-col items-center justify-center text-center">
+          <h3 class="text-xl font-bold mb-2" style="color: var(--primary)">{{ selectedExercise?.name }}</h3>
+          
+          <!-- Rep phase indicator -->
+          <div v-if="currentRepPhase" class="mb-4">
+            <div class="text-4xl mb-2">{{ repPhaseEmoji }}</div>
+            <p class="text-lg font-semibold" style="color: var(--primary)">{{ repPhaseLabel }}</p>
           </div>
 
-          <!-- Set/Rep display -->
-          <div class="mb-6">
-            <p class="text-sm mb-1" style="color: var(--text-muted)">Set {{ currentSet }} of {{ totalSets }}</p>
-            <p class="text-5xl font-mono font-bold" style="color: var(--primary)">{{ currentRep }} / {{ targetReps }}</p>
-            <p class="text-sm mt-1" style="color: var(--text-muted)">reps</p>
+          <!-- Timer / Rep counter -->
+          <div class="mb-4">
+            <p class="text-6xl font-mono font-bold" style="color: var(--primary)">
+              {{ mode === 'reps' ? `${currentRep}/${config?.reps?.repCount}` : formatTime(timeRemaining) }}
+            </p>
+            <p class="text-sm mt-1" style="color: var(--text-muted)">
+              {{ mode === 'reps' ? 'reps' : 'remaining' }}
+            </p>
           </div>
 
-          <!-- Trainer messages -->
-          <div v-if="sessionMessages.length > 0" class="mb-6 w-full max-w-xs">
-            <div v-for="(msg, idx) in sessionMessages" :key="idx"
-              class="text-xs p-2 rounded mb-1"
-              :style="{
-                background: 'color-mix(in srgb, var(--primary) 8%, transparent)',
-                color: 'var(--text-muted)',
-                opacity: 0.5 + (idx / Math.max(1, sessionMessages.length - 1)) * 0.5,
-              }">
-              {{ msg }}
-            </div>
+          <!-- Set indicator -->
+          <p class="text-sm mb-4" style="color: var(--text-muted)">Set {{ currentSet }} of {{ config?.sets || 3 }}</p>
+
+          <!-- Current cue message -->
+          <div v-if="currentCue" class="mb-6 p-4 rounded-xl animate-pulse" style="background: color-mix(in srgb, var(--primary) 15%, transparent)">
+            <p class="text-sm font-medium" style="color: var(--primary)">{{ currentCue }}</p>
           </div>
 
-          <!-- Rep button -->
-          <button @click="completeRep"
-            class="px-8 py-4 rounded-xl font-semibold text-lg transition-all hover:scale-105 mb-4"
-            :style="{ background: 'var(--primary)', color: 'var(--background)' }">
-            ✓ Complete Rep
-          </button>
+          <!-- Pause/Stop buttons -->
+          <div class="flex gap-3">
+            <button @click="pauseExercise" class="px-4 py-2 rounded-xl text-sm font-medium" :style="{ background: 'var(--surface-light)', color: 'var(--text)' }">
+              Pause
+            </button>
+            <button @click="stopExercise" class="px-4 py-2 rounded-xl text-sm font-medium" :style="{ background: 'color-mix(in srgb, var(--danger) 20%, transparent)', color: 'var(--danger)' }">
+              Stop
+            </button>
+          </div>
+        </div>
 
-          <!-- Cancel -->
-          <button @click="closeExercisePanel" class="text-sm" style="color: var(--text-muted)">
-            End Session
+        <!-- REST VIEW -->
+        <div v-else-if="phase === 'rest'" class="flex-1 flex flex-col items-center justify-center text-center">
+          <div class="text-6xl mb-4 animate-pulse">💤</div>
+          <h3 class="text-2xl font-bold mb-2" style="color: var(--primary)">Rest Time!</h3>
+          <p class="text-6xl font-mono font-bold my-4" style="color: var(--primary)">{{ formatTime(timeRemaining) }}</p>
+          <p class="text-sm mb-6" style="color: var(--text-muted)">Next set coming up...</p>
+          <button @click="skipRest" class="px-6 py-2 rounded-xl text-sm font-medium" :style="{ background: 'var(--surface-light)', color: 'var(--text)' }">
+            Skip Rest
           </button>
         </div>
 
-        <!-- SESSION COMPLETE VIEW -->
-        <div v-else class="flex-1 flex flex-col items-center justify-center text-center">
-          <!-- Celebration -->
-          <div class="mb-6">
-            <div class="text-6xl animate-bounce">💪</div>
-            <div class="text-4xl mt-2 animate-pulse">✨ 🍑 ✨</div>
+        <!-- PAUSED VIEW -->
+        <div v-else-if="isPaused" class="flex-1 flex flex-col items-center justify-center text-center">
+          <div class="text-6xl mb-4">⏸️</div>
+          <h3 class="text-2xl font-bold mb-4" style="color: var(--primary)">Paused</h3>
+          <div class="flex flex-col gap-3 w-full max-w-xs">
+            <button @click="resumeExercise" class="px-6 py-3 rounded-xl font-semibold" :style="{ background: 'var(--primary)', color: 'var(--background)' }">
+              Resume
+            </button>
+            <button @click="stopExercise" class="px-6 py-2 rounded-xl text-sm" :style="{ background: 'var(--surface-light)', color: 'var(--text-muted)' }">
+              End Session
+            </button>
           </div>
-          
+        </div>
+
+        <!-- COMPLETE VIEW -->
+        <div v-else-if="phase === 'complete'" class="flex-1 flex flex-col items-center justify-center text-center">
+          <div class="mb-6">
+            <div class="text-6xl animate-bounce">🍑</div>
+            <div class="text-4xl mt-2 animate-pulse">✨ 💪 ✨</div>
+          </div>
           <h3 class="text-2xl font-bold mb-2" style="color: var(--primary)">Exercise Complete!</h3>
           <p class="text-lg mb-4" style="color: var(--text)">Amazing work, Yuyu!</p>
-          
-          <!-- Stats -->
           <div class="mb-6 p-4 rounded-xl" style="background: var(--surface-light)">
             <p class="text-sm" style="color: var(--text-muted)">You completed</p>
-            <p class="text-3xl font-bold" style="color: var(--primary)">{{ totalSets }} sets × {{ targetReps }} reps</p>
+            <p class="text-3xl font-bold" style="color: var(--primary)">{{ config?.sets || 3 }} sets</p>
             <p class="text-sm mt-1" style="color: var(--text-muted)">of {{ selectedExercise?.name }}</p>
           </div>
-          
-          <!-- Action buttons -->
           <div class="flex flex-col gap-3 w-full max-w-xs">
-            <button @click="closeExercisePanel"
-              class="px-6 py-3 rounded-xl font-medium transition-all hover:scale-105"
-              :style="{ background: 'var(--surface-light)', color: 'var(--text-muted)' }">
+            <button @click="closeExercisePanel" class="px-6 py-3 rounded-xl font-medium" :style="{ background: 'var(--surface-light)', color: 'var(--text-muted)' }">
               Close
             </button>
-            <button @click="resetAfterComplete"
-              class="px-6 py-3 rounded-xl font-semibold transition-all hover:scale-105"
-              :style="{ background: 'var(--primary)', color: 'var(--background)' }">
-              <Icon :name="icons.start" /> Do Another Exercise
+            <button @click="resetAndClose" class="px-6 py-3 rounded-xl font-semibold" :style="{ background: 'var(--primary)', color: 'var(--background)' }">
+              <Icon :name="icons.start" /> New Exercise
             </button>
           </div>
         </div>
@@ -151,7 +139,8 @@
 
 <script setup lang="ts">
 import { getIcons } from '~/utils/theme-icons'
-import { useExercisePanel } from '~/composables/useExercisePanel'
+import { useAutoExercise } from '~/composables/useAutoExercise'
+import type { RepsModeConfig, TimedModeConfig } from '~/types/exercise-config'
 
 const currentTheme = ref('yumi')
 const icons = computed(() => getIcons(currentTheme.value))
@@ -161,27 +150,98 @@ onMounted(async () => {
     const settings = await $fetch<any>('/api/settings')
     currentTheme.value = settings?.theme || 'yumi'
   } catch {}
-  window.addEventListener('theme-change', ((e: CustomEvent) => { currentTheme.value = e.detail.theme }) as EventListener)
 })
 
+// Use the auto-exercise composable
 const {
-  showExercisePanel,
-  selectedExercise,
-  isGuidedSession,
-  sessionComplete,
-  currentSet,
-  totalSets,
+  phase,
   currentRep,
-  targetReps,
-  isResting,
-  restCountdown,
-  sessionMessages,
-  closeExercisePanel,
-  startGuidedSession,
-  completeRep,
+  currentSet,
+  currentRepPhase,
+  timeRemaining,
+  currentCue,
+  isPaused,
+  countdownValue,
+  startExercise,
+  pauseExercise,
+  resumeExercise,
+  stopExercise,
   skipRest,
-  resetAfterComplete,
-} = useExercisePanel()
+  on,
+  off,
+} = useAutoExercise()
+
+// Local state
+const showExercisePanel = ref(false)
+const selectedExercise = ref<any>(null)
+const isGuidedSession = ref(false)
+const mode = ref<'reps' | 'timed'>('reps')
+const config = ref<RepsModeConfig | TimedModeConfig | null>(null)
+
+// Rep phase emoji/label
+const repPhaseEmoji = computed(() => {
+  const map: Record<string, string> = { up: '⬆️', hold: '✊', down: '⬇️' }
+  return map[currentRepPhase.value] || '🍑'
+})
+
+const repPhaseLabel = computed(() => {
+  const map: Record<string, string> = { up: 'Lift Up!', hold: 'Hold It!', down: 'Lower Slowly~' }
+  return map[currentRepPhase.value] || ''
+})
+
+function formatTime(seconds: number) {
+  const m = Math.floor(seconds / 60)
+  const s = seconds % 60
+  return m > 0 ? `${m}:${s.toString().padStart(2, '0')}` : `${s}`
+}
+
+function openExercisePanel(exercise: any) {
+  selectedExercise.value = exercise
+  isGuidedSession.value = false
+  showExercisePanel.value = true
+}
+
+function closeExercisePanel() {
+  stopExercise()
+  showExercisePanel.value = false
+  selectedExercise.value = null
+  isGuidedSession.value = false
+}
+
+function startGuidedSession() {
+  isGuidedSession.value = true
+  
+  // Determine exercise mode based on exercise type
+  const exerciseName = selectedExercise.value?.name || ''
+  
+  if (exerciseName.includes('Sit') || exerciseName.includes('Plank') || exerciseName.includes('Hold')) {
+    // Timed exercise
+    mode.value = 'timed'
+    config.value = {
+      mode: 'timed',
+      holdDuration: 45,
+      restDuration: 30,
+    } as TimedModeConfig
+  } else {
+    // Rep-based exercise
+    mode.value = 'reps'
+    config.value = {
+      mode: 'reps',
+      repCount: 12,
+      pace: { up: 2, hold: 2, down: 2 },
+    } as RepsModeConfig
+  }
+  
+  startExercise(config.value as any)
+}
+
+function resetAndClose() {
+  isGuidedSession.value = false
+  selectedExercise.value = null
+}
+
+// Expose to parent
+defineExpose({ openExercisePanel, closeExercisePanel })
 </script>
 
 <style scoped>
