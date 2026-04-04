@@ -622,7 +622,6 @@ export function useAutoExercise() {
   let phaseStartTime = 0
   let phaseDurationMs = 0
   let progressRaf: number | null = null
-  let pausedRemaining = 0
 
   function startCountdown() {
     phase.value = 'countdown'
