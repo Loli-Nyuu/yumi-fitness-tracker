@@ -133,7 +133,7 @@
           <h3 class="text-2xl font-bold mb-2" style="color: var(--primary)">Rest Time!</h3>
           <p class="text-6xl font-mono font-bold my-4" style="color: var(--primary)">{{ formatTime(timeRemaining) }}</p>
           <p class="text-sm mb-6" style="color: var(--text-muted)">Next set coming up...</p>
-          <button @click="() => { console.log('Skip Rest Clicked'); skipRest(); }" class="px-6 py-2 rounded-xl text-sm font-medium" :style="{ background: 'var(--surface-light)', color: 'var(--text)' }">
+          <button @click="skipRest" class="px-6 py-2 rounded-xl text-sm font-medium transition-all hover:scale-105" style="z-index: 10; background: var(--surface-light); color: var(--text)">
             Skip Rest
           </button>
         </div>
