@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+@theme {
+  /* Font Family: Plus Jakarta Sans */
+  --font-display: 'Plus Jakarta Sans', sans-serif;
+  --font-headline: 'Plus Jakarta Sans', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+
+  /* Colors: The Pink Spectrum */
+  --color-background: #fff4f7;
+  --color-surface: #fff4f7;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #fdedf2;
+  --color-surface-container: #f4e4ea;
+  --color-surface-container-high: #efdee4;
+  --color-surface-container-highest: #ead8df;
+  
+  --color-primary: #b30065;
+  --color-primary-fixed: #ff6ea9;
+  --color-primary-container: #ff6ea9;
+  --color-on-primary: #ffeff2;
+  --color-on-primary-container: #4b0027;
+  
+  --color-secondary: #a8216e;
+  --color-secondary-container: #ffc0d9;
+  --color-on-secondary-container: #8d0058;
+  
+  --color-tertiary-container: #ffb6c1;
+  --color-on-tertiary-container: #65323c;
+  
+  --color-on-surface: #352c30;
+  --color-on-surface-variant: #63595d;
+  --color-outline-variant: #b7aaae;
+
+  /* Roundedness: No sharp corners! */
+  --radius-md: 1.5rem;
+  --radius-lg: 2rem;
+  --radius-xl: 3rem;
+  --radius-full: 9999px;
+}
+
+/* Base Styles for the Magical Girl Aesthetic */
+body {
+  background-color: var(--color-background);
+  color: var(--color-on-surface);
+  font-family: var(--font-body);
+}
+
+/* Magical Glow Effect */
+.magical-glow {
+  filter: drop-shadow(0 0 8px rgba(255, 188, 217, 0.6));
+}
+
+/* Ribbon Gradient */
+.ribbon-gradient {
+  background: linear-gradient(135deg, #eaaeb9 0%, #ffbcd9 100%);
+}

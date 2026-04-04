@@ -10,7 +10,7 @@ export default defineNuxtConfig({
   modules: ['@vueuse/nuxt'],
 
 
-  css: ['~/assets/css/main.css'],
+  css: ['~/assets/css/magical-theme.css'],
 
   vite: {
     plugins: [tailwindcss()],
