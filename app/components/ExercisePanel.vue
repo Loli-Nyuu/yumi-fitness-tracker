@@ -108,10 +108,13 @@
             <p class="text-sm font-medium" style="color: var(--primary)">{{ currentCue }}</p>
           </div>
 
-          <!-- Pause/Stop buttons -->
+          <!-- Pause/Resume & Stop buttons -->
           <div class="flex gap-3">
-            <button @click="pauseExercise" class="px-4 py-2 rounded-xl text-sm font-medium" :style="{ background: 'var(--surface-light)', color: 'var(--text)' }">
-              Pause
+            <button 
+              @click="isPaused ? resumeExercise() : pauseExercise()" 
+              class="px-4 py-2 rounded-xl text-sm font-medium transition-all"
+              :style="{ background: isPaused ? 'var(--success)' : 'var(--surface-light)', color: isPaused ? 'var(--background)' : 'var(--text)' }">
+              {{ isPaused ? 'Resume' : 'Pause' }}
             </button>
             <button @click="stopExercise" class="px-4 py-2 rounded-xl text-sm font-medium" :style="{ background: 'color-mix(in srgb, var(--danger) 20%, transparent)', color: 'var(--danger)' }">
               Stop
@@ -135,19 +138,8 @@
           </button>
         </div>
 
-        <!-- PAUSED VIEW -->
-        <div v-else-if="isPaused" class="flex-1 flex flex-col items-center justify-center text-center">
-          <div class="text-6xl mb-4">⏸️</div>
-          <h3 class="text-2xl font-bold mb-4" style="color: var(--primary)">Paused</h3>
-          <div class="flex flex-col gap-3 w-full max-w-xs">
-            <button @click="resumeExercise" class="px-6 py-3 rounded-xl font-semibold" :style="{ background: 'var(--primary)', color: 'var(--background)' }">
-              Resume
-            </button>
-            <button @click="stopExercise" class="px-6 py-2 rounded-xl text-sm" :style="{ background: 'var(--surface-light)', color: 'var(--text-muted)' }">
-              End Session
-            </button>
-          </div>
-        </div>
+        <!-- PAUSED OVERLAY (Optional: if you want a full screen pause, otherwise the button toggle is enough) -->
+        <!-- We are removing the separate paused view to keep it simple and use the toggle button instead. -->
 
         <!-- COMPLETE VIEW -->
         <div v-else-if="phase === 'complete'" class="flex-1 flex flex-col items-center justify-center text-center">

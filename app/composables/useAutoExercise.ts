@@ -501,12 +501,18 @@ export function useAutoExercise() {
 
   /** Resume from paused state */
   function resumeExercise() {
+    console.log('[AutoExercise] Resume clicked. Paused remaining:', pausedRemaining, 'Phase:', phase.value)
     if (!isPaused.value || phase.value === 'complete') return
     isPaused.value = false
     
     // Restart session timer
     if (sessionTimer) clearInterval(sessionTimer)
     sessionTimer = setInterval(() => { sessionElapsed.value++ }, 1000)
+    
+    // Force a UI update for the cue
+    if (phase.value === 'active' && config.value?.mode === 'reps') {
+       currentCue.value = REP_CUES[currentRepPhase.value] || 'Keep going!'
+    }
     
     const cfg = config.value!
 
