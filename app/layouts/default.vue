@@ -22,11 +22,15 @@
     <!-- Global Panels -->
     <BreathingPanel />
     <ExercisePanel />
+    
+    <!-- Magical Mobile Navigation -->
+    <MagicalMobileNav />
   </div>
 </template>
 
 <script setup lang="ts">
 import MagicalSidebar from '~/components/layout/MagicalSidebar.vue'
+import MagicalMobileNav from '~/components/layout/MagicalMobileNav.vue'
 </script>
 
 <style>
