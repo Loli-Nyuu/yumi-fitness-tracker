@@ -488,7 +488,12 @@ export function useAutoExercise() {
   /** Pause the current exercise, preserving state for resume */
   function pauseExercise() {
     if (phase.value === 'idle' || phase.value === 'complete' || isPaused.value) return
-    clearAllTimers()
+    
+    // Stop all timers including the session timer
+    if (timerInterval) clearInterval(timerInterval)
+    if (sessionTimer) clearInterval(sessionTimer)
+    if (progressRaf) cancelAnimationFrame(progressRaf)
+    
     pausedRemaining = timeRemaining.value
     isPaused.value = true
     currentCue.value = 'Paused ⏸️'
@@ -498,6 +503,11 @@ export function useAutoExercise() {
   function resumeExercise() {
     if (!isPaused.value || phase.value === 'complete') return
     isPaused.value = false
+    
+    // Restart session timer
+    if (sessionTimer) clearInterval(sessionTimer)
+    sessionTimer = setInterval(() => { sessionElapsed.value++ }, 1000)
+    
     const cfg = config.value!
 
     // Resume the countdown from where we paused
