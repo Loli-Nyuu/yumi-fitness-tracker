@@ -615,12 +615,14 @@ export function useAutoExercise() {
   const countdownValue = ref(3)
   const sessionElapsed = ref(0)
   let sessionTimer: ReturnType<typeof setInterval> | null = null
+  let restTimer: ReturnType<typeof setInterval> | null = null
   
   // Millisecond-precise phase progress (0-100)
   const phaseProgressMs = ref(100)
   let phaseStartTime = 0
   let phaseDurationMs = 0
   let progressRaf: number | null = null
+  let pausedRemaining = 0
 
   function startCountdown() {
     phase.value = 'countdown'
@@ -652,9 +654,14 @@ export function useAutoExercise() {
   }
 
   function skipRest() {
-    if (restTimer) clearInterval(restTimer)
+    console.log('[AutoExercise] Skip Rest clicked!')
+    if (restTimer) {
+      console.log('[AutoExercise] Clearing rest timer...')
+      clearInterval(restTimer)
+    }
     restTimer = null
     timeRemaining.value = 0
+    console.log('[AutoExercise] Calling handleRestComplete...')
     handleRestComplete()
   }
 
