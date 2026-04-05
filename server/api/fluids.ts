@@ -99,12 +99,14 @@ export default defineEventHandler(async (event) => {
     }
 
     // Normal single entry log
+    const now = new Date().toISOString().replace('T', ' ').substring(0, 19)
     const result = db.insert(fluidLog).values({
       date: body.date || today,
       type: body.type,
       subtype: body.subtype || '',
       amountMl: body.amountMl,
       note: body.note || '',
+      createdAt: now,
     }).run()
 
     return {
