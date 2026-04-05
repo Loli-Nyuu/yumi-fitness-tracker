@@ -27,7 +27,7 @@
         <!-- The Drink Image -->
         <img :src="getDrinkImage(drink.type)" :alt="drink.type" class="w-14 h-14 object-contain drop-shadow-sm" />
 
-        <!-- Cute Dark Tooltip -->
+        <!-- Cute Dark Tooltip with Subtype -->
         <div class="absolute bottom-full mb-2 hidden group-hover:block w-32 bg-[#1f1c1d]/90 backdrop-blur-md rounded-xl p-3 shadow-xl border border-white/10 z-10 text-center">
           <p class="text-xs font-bold text-primary-fixed capitalize">
             {{ drink.type }}
