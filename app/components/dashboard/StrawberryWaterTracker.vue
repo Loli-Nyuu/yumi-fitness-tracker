@@ -8,9 +8,12 @@
         </h3>
         <p class="text-on-surface-variant">Stay hydrated to keep your magic flowing!</p>
       </div>
-      <div class="text-right">
-        <span class="text-3xl font-headline font-black text-primary">{{ currentCups }} / {{ totalCups }}</span>
-        <p class="text-xs font-bold text-on-surface-variant uppercase">Cups</p>
+      <div class="text-right flex flex-col items-end">
+        <div class="flex items-baseline gap-2">
+          <span class="text-3xl font-headline font-black text-primary">{{ todaysDrinks.length }}</span>
+          <span class="material-symbols-outlined text-tertiary-container" style="font-variation-settings: 'FILL' 1;">water_drop</span>
+        </div>
+        <p class="text-[8px] text-tertiary-container font-bold">{{ effectiveMlTotal }}ml effective</p>
       </div>
     </div>
 
@@ -68,9 +71,6 @@ const { data: fluidData, refresh: refreshFluids } = useFetch('/api/fluids')
 const summary = computed(() => fluidData.value?.summary || { effectiveMl: 0, targetMl: 2500 })
 const entries = computed(() => fluidData.value?.entries || [])
 const effectiveMlTotal = computed(() => summary.value.effectiveMl)
-const targetMl = computed(() => summary.value.targetMl)
-const currentCups = computed(() => Math.floor(effectiveMlTotal.value / 250))
-const totalCups = computed(() => Math.max(8, Math.ceil(targetMl.value / 250)))
 
 const todaysDrinks = computed(() => {
   return entries.value.map((e: any) => ({
