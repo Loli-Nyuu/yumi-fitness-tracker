@@ -1,12 +1,12 @@
 <template>
-  <div class="bg-card p-6 relative">
+  <div class="bg-surface-container-lowest p-6 relative rounded-2xl shadow-[0px_10px_30px_rgba(125,78,88,0.08)] magical-glow transition-all duration-300 hover:scale-[1.01]">
     <button @click="showSleepHistory = true"
       class="absolute top-4 right-4 w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110"
       style="background: var(--surface-light); color: var(--text-muted)" title="Sleep History">
-      <Icon :name="icons.clock" class="text-sm" />
+      <Icon name="material-symbols:nest-clock-farsight-analog-outline-rounded" class="text-sm" />
     </button>
-    <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
-      <Icon :name="icons.sleep" /> Sleep
+    <h2 class="text-2xl font-headline text-primary mb-4 flex items-center gap-2">
+      <span class="material-symbols-outlined text-[#ffb6c1]" style="font-variation-settings: 'FILL' 1;">bedtime</span> Dream Journal
     </h2>
     <form @submit.prevent="logSleep" class="space-y-3 mb-4">
       <div class="flex gap-2">
@@ -15,95 +15,88 @@
           :style="sleepForm.sleepType === 'sleep'
             ? { background: 'var(--primary)', color: 'var(--background)' }
             : { background: 'var(--surface-light)', color: 'var(--text-muted)' }">
-          <Icon :name="icons.sleep" /> Sleep
+          <Icon name="material-symbols:play-circle-outline-rounded" /> Sleep
         </button>
         <button type="button" @click="sleepForm.sleepType = 'nap'"
           class="flex-1 py-2 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2"
           :style="sleepForm.sleepType === 'nap'
             ? { background: 'var(--primary)', color: 'var(--background)' }
             : { background: 'var(--surface-light)', color: 'var(--text-muted)' }">
-          <Icon :name="icons.clock" /> Nap
+          <Icon name="material-symbols:nest-clock-farsight-analog-outline-rounded" /> Nap
         </button>
       </div>
-      <div>
-        <label class="text-sm" style="color: var(--text-muted)">Quality (1-5)</label>
-        <div class="flex gap-2 mt-1">
-          <button v-for="i in 5" :key="i" type="button" @click="sleepForm.quality = i" class="text-2xl transition-all"
-            :style="{ opacity: i <= sleepForm.quality ? '1' : '0.3', transform: i <= sleepForm.quality ? 'scale(1.1)' : 'scale(1)' }">
-            <Icon :name="icons.star" :style="{ color: 'var(--accent)' }" />
-          </button>
+      <div class="bg-surface-container-lowest p-4 rounded-2xl border border-outline-variant/30 space-y-4">
+        <div>
+          <label class="text-xs font-bold text-on-surface-variant uppercase mb-2 block opacity-70">Dream Quality</label>
+          <div class="flex justify-between gap-2">
+            <button v-for="i in 5" :key="i" type="button" @click="sleepForm.quality = i" 
+              class="aspect-square rounded-xl flex-1 flex items-center justify-center transition-all hover:scale-105"
+              :style="i <= sleepForm.quality 
+                ? { background: 'linear-gradient(135deg, #ff6ea9 0%, #b30065 100%)', boxShadow: '0 4px 12px rgba(179, 0, 101, 0.2)' }
+                : { background: 'var(--surface)', opacity: 0.5 }">
+              <span class="material-symbols-outlined text-white text-xl" :style="{ fontVariationSettings: i <= sleepForm.quality ? '\'FILL\' 1' : '\'FILL\' 0' }">star</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-bold text-on-surface-variant uppercase mb-1 block opacity-70">Hours</label>
+            <input v-model.number="sleepForm.hours" type="number" step="0.5" placeholder="7.5" 
+              class="w-full px-4 py-3 rounded-xl font-bold text-center border-2 border-outline-variant/30 focus:border-primary/50 outline-none transition-colors" 
+              style="background: var(--surface); color: var(--text)" />
+          </div>
+          <div>
+            <label class="text-xs font-bold text-on-surface-variant uppercase mb-1 block opacity-70">Date</label>
+            <input v-model="sleepForm.date" type="date" 
+              class="w-full px-4 py-3 rounded-xl font-medium text-center text-sm border-2 border-outline-variant/30 focus:border-primary/50 outline-none transition-colors" 
+              style="background: var(--surface); color: var(--text)" />
+          </div>
         </div>
       </div>
-      <div class="grid grid-cols-2 gap-2">
-        <div>
-          <label class="text-sm" style="color: var(--text-muted)">Hours</label>
-          <input v-model.number="sleepForm.hours" type="number" step="0.5" placeholder="7" class="w-full mt-1 px-3 py-2 rounded-xl" style="background: var(--surface); border: 1px solid var(--border); color: var(--text)" />
-        </div>
-        <div>
-          <label class="text-sm" style="color: var(--text-muted)">Date</label>
-          <input v-model="sleepForm.date" type="date" class="w-full mt-1 px-3 py-2 rounded-xl" style="background: var(--surface); border: 1px solid var(--border); color: var(--text)" />
-        </div>
-      </div>
-      <button type="submit" class="w-full py-2 font-semibold rounded-xl transition-all flex items-center justify-center gap-2" :style="{ background: 'var(--primary)', color: 'var(--background)', borderRadius: 'var(--radius)' }">
-        <Icon :name="icons.complete" /> Log Sleep
+      <button type="submit" class="w-full py-3 font-semibold rounded-full transition-all flex items-center justify-center gap-2" style="background: linear-gradient(135deg, #ff6ea9 0%, #b30065 100%); color: white; border-radius: 9999px; box-shadow: 0 4px 12px rgba(179, 0, 101, 0.3);">
+        <Icon name="material-symbols:done-rounded" /> Log Sleep
       </button>
     </form>
-    <!-- Sleep History Modal -->
-    <Transition name="slide">
-      <div v-if="showSleepHistory" class="fixed inset-0 z-50 flex items-center justify-center p-4" @click.self="showSleepHistory = false">
-        <div class="w-full max-w-md max-h-[80vh] overflow-y-auto rounded-2xl p-5" style="background: var(--surface); border: 1px solid var(--border)">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="font-semibold flex items-center gap-2" style="color: var(--primary)">
-              <Icon :name="icons.sleep" /> Sleep History
-            </h3>
-            <button @click="showSleepHistory = false" style="color: var(--text-muted)"><Icon :name="icons.close" /></button>
+  </div>
+
+  <!-- Sleep History Modal -->
+  <MagicalModal v-model="showSleepHistory" title="Sleep History" icon="bedtime">
+    <div v-if="sleepHistory.length" class="space-y-3">
+      <div v-for="group in sleepHistoryGrouped" :key="group.date" class="p-4 rounded-2xl bg-surface border border-outline-variant/20">
+        <p class="text-sm font-bold mb-3 text-primary">{{ formatDate(group.date) }}</p>
+        <div v-for="entry in group.entries" :key="entry.id" class="flex items-center justify-between p-3 rounded-xl mb-2 bg-surface-container-lowest hover:scale-[1.02] transition-transform">
+          <div class="flex items-center gap-3">
+            <span class="text-xs px-2 py-0.5 rounded-full font-bold" :style="(entry.sleepType || 'sleep') === 'nap'
+              ? { background: 'color-mix(in srgb, var(--tertiary-container) 40%, transparent)', color: 'var(--on-tertiary-container)' }
+              : { background: 'color-mix(in srgb, var(--primary-container) 40%, transparent)', color: 'var(--on-primary-container)' }">
+              {{ (entry.sleepType || 'sleep') === 'nap' ? 'Nap' : 'Sleep' }}
+            </span>
+            <span class="text-sm font-semibold">{{ entry.hours }}h</span>
           </div>
-          <div v-if="sleepHistory.length" class="space-y-2">
-            <div v-for="group in sleepHistoryGrouped" :key="group.date" class="p-3 rounded-xl" style="background: var(--surface-light)">
-              <p class="text-sm font-medium mb-2">{{ formatDate(group.date) }}</p>
-              <div v-for="entry in group.entries" :key="entry.id" class="flex items-center justify-between p-2 rounded-lg mb-1" style="background: var(--surface)">
-                <div class="flex items-center gap-2">
-                  <span class="text-xs px-1.5 py-0.5 rounded-full" :style="(entry.sleepType || 'sleep') === 'nap'
-                    ? { background: 'color-mix(in srgb, var(--accent) 20%, transparent)', color: 'var(--accent)' }
-                    : { background: 'color-mix(in srgb, var(--primary) 20%, transparent)', color: 'var(--primary)' }">
-                    {{ (entry.sleepType || 'sleep') === 'nap' ? 'Nap' : 'Sleep' }}
-                  </span>
-                  <span class="text-sm">{{ entry.hours }}h</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <div class="flex gap-0.5">
-                    <Icon v-for="i in 5" :key="i" :name="icons.star" class="text-sm"
-                      :style="{ opacity: i <= entry.quality ? '1' : '0.2', color: 'var(--accent)' }" />
-                  </div>
-                  <button @click="deleteSleep(entry.id)" class="w-6 h-6 rounded-full flex items-center justify-center transition-all hover:scale-110"
-                    style="background: color-mix(in srgb, var(--danger) 20%, transparent); color: var(--danger)">
-                    <Icon :name="icons.close" class="text-xs" />
-                  </button>
-                </div>
-              </div>
+          <div class="flex items-center gap-2">
+            <div class="flex gap-0.5">
+              <Icon
+                v-for="i in 5"
+                :key="i"
+                :name="i <= entry.quality ? 'material-symbols:family-star' : 'material-symbols:kid-star-outline'"
+                class="text-sm"
+                :style="{ opacity: i <= entry.quality ? '1' : '0.15', color: '#ffbcd9', filter: i <= entry.quality ? 'drop-shadow(0 0 4px #ffbcd9)' : 'none' }"
+              />
             </div>
+            <button @click="deleteSleep(entry.id)" class="w-6 h-6 rounded-full flex items-center justify-center transition-all hover:scale-110 hover:bg-danger/10"
+              style="color: var(--danger)">
+              <Icon name="material-symbols:delete-forever-outline-rounded" class="text-xs" />
+            </button>
           </div>
-          <p v-else class="text-sm text-center py-4" style="color: var(--text-muted)">No sleep logged yet!</p>
         </div>
       </div>
-    </Transition>
-  </div>
+    </div>
+    <p v-else class="text-sm text-center py-6 text-on-surface-variant/70">No magical dreams logged yet! 🌙</p>
+  </MagicalModal>
 </template>
 
 <script setup lang="ts">
-import { getIcons } from '~/utils/theme-icons'
-
-const currentTheme = ref('yumi')
-const icons = computed(() => getIcons(currentTheme.value))
-
-onMounted(async () => {
-  try {
-    const settings = await $fetch<any>('/api/settings')
-    currentTheme.value = settings?.theme || 'yumi'
-  } catch {}
-  window.addEventListener('theme-change', ((e: CustomEvent) => { currentTheme.value = e.detail.theme }) as EventListener)
-})
-
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
 }

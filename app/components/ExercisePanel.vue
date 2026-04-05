@@ -6,7 +6,7 @@
         <div class="flex justify-end mb-4">
           <button @click="closeExercisePanel" class="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110"
             style="background: var(--surface-light); color: var(--text-muted)">
-            <Icon :name="icons.close" />
+            <Icon name="material-symbols:close-rounded" />
           </button>
         </div>
 
@@ -51,7 +51,7 @@
           <button @click="startGuidedSession"
             class="mt-auto w-full py-3 rounded-xl font-semibold transition-all hover:scale-105"
             :style="{ background: 'var(--primary)', color: 'var(--background)' }">
-            <Icon :name="icons.start" /> Start Guided Session
+            <Icon name="material-symbols:play-circle-outline-rounded" /> Start Guided Session
           </button>
         </div>
 
@@ -159,7 +159,7 @@
               Close
             </button>
             <button @click="resetAndClose" class="px-6 py-3 rounded-xl font-semibold" :style="{ background: 'var(--primary)', color: 'var(--background)' }">
-              <Icon :name="icons.start" /> New Exercise
+              <Icon name="material-symbols:play-circle-outline-rounded" /> New Exercise
             </button>
           </div>
         </div>
@@ -169,20 +169,9 @@
 </template>
 
 <script setup lang="ts">
-import { getIcons } from '~/utils/theme-icons'
 import { useExercisePanel } from '~/composables/useExercisePanel'
 import { useAutoExercise } from '~/composables/useAutoExercise'
 import type { ExerciseConfig, RepsModeConfig, TimedModeConfig } from '~/types/exercise-config'
-
-const currentTheme = ref('yumi')
-const icons = computed(() => getIcons(currentTheme.value))
-
-onMounted(async () => {
-  try {
-    const settings = await $fetch<any>('/api/settings')
-    currentTheme.value = settings?.theme || 'yumi'
-  } catch {}
-})
 
 // Use the exercise panel composable (shared state for show/hide)
 const {

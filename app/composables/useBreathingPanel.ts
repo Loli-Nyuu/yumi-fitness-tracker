@@ -3,28 +3,28 @@ import { useWebSocket } from '@vueuse/core'
 
 const breathingPatterns = [
   {
-    id: 'box', name: 'Box Breathing',
+    id: 'box', name: 'Box Breathing', icon: 'square_foot',
     helps: 'Reduces stress and anxiety. Great before meetings or after heated moments.',
     instructions: 'Breathe in for 4 seconds, hold for 4, breathe out for 4, hold for 4. Keep a steady rhythm like tracing a square.',
     inhale: 4, hold1: 4, exhale: 4, hold2: 4,
     inhaleRoute: 'nose', exhaleRoute: 'nose',
   },
   {
-    id: '478', name: '4-7-8 Breathing',
+    id: '478', name: '4-7-8 Breathing', icon: 'bedtime',
     helps: 'Natural sleep aid. Use before bed or when you can\'t fall asleep.',
     instructions: 'Breathe in through your nose for 4 seconds, hold for 7, then slowly exhale through your mouth for 8. The long exhale is key.',
     inhale: 4, hold1: 7, exhale: 8, hold2: 0,
     inhaleRoute: 'nose', exhaleRoute: 'mouth',
   },
   {
-    id: 'diaphragmatic', name: 'Deep Belly Breathing',
+    id: 'diaphragmatic', name: 'Deep Belly Breathing', icon: 'monitor_heart',
     helps: 'Activates the parasympathetic system. Good for focus and recovery.',
     instructions: 'Place a hand on your belly. Breathe deep so your belly rises (not your chest). Inhale 5 seconds, brief hold, exhale 5 seconds.',
     inhale: 5, hold1: 2, exhale: 5, hold2: 0,
     inhaleRoute: 'nose', exhaleRoute: 'nose',
   },
   {
-    id: 'energizing', name: 'Energizing Breath',
+    id: 'energizing', name: 'Energizing Breath', icon: 'bolt',
     helps: 'Quick energy boost. Use in the afternoon slump instead of coffee.',
     instructions: 'Fast inhale through nose (2 sec), sharp exhale through mouth (1 sec). Short, rhythmic. Like a gentle bellows.',
     inhale: 2, hold1: 0, exhale: 1, hold2: 0,

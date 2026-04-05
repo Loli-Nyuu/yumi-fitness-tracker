@@ -1,18 +1,18 @@
 <template>
   <Transition name="panel">
     <div v-if="showBreathingPanel" class="fixed inset-0 z-50 flex justify-end" @click.self="closeBreathingPanel">
-      <div class="w-full max-w-sm h-full overflow-y-auto p-6 flex flex-col" style="background: var(--surface); border-left: 1px solid var(--border)">
+      <div class="w-full max-w-sm h-full overflow-y-auto p-6 flex flex-col bg-surface-container-lowest border-l-2 border-tertiary-container/30 shadow-2xl rounded-l-3xl">
         <!-- Close button -->
         <div class="flex justify-end mb-4">
-          <button @click="closeBreathingPanel" class="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110"
+          <button @click="closeBreathingPanel" class="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110 hover:rotate-90"
             style="background: var(--surface-light); color: var(--text-muted)">
-            <Icon :name="icons.close" />
+            <Icon name="material-symbols:close-rounded" />
           </button>
         </div>
 
         <!-- COUNTDOWN: Waiting to auto-start -->
         <div v-if="!activeBreathing && countdownSeconds > 0" class="flex-1 flex flex-col items-center justify-center text-center">
-          <Icon :name="icons.breathing" class="text-5xl mb-4" style="color: var(--primary)" />
+          <Icon name="material-symbols:air" class="text-5xl mb-4" style="color: var(--primary)" />
           <h3 class="text-xl font-bold mb-1" style="color: var(--primary)">{{ selectedPattern?.name }}</h3>
           <p class="text-sm mb-6" style="color: var(--text-muted)">{{ selectedPattern?.helps }}</p>
 
@@ -21,13 +21,13 @@
 
           <button @click="cancelCountdown" class="px-6 py-2.5 rounded-xl font-medium transition-all hover:scale-105"
             :style="{ background: 'color-mix(in srgb, var(--danger) 20%, transparent)', color: 'var(--danger)' }">
-            <Icon :name="icons.stop" /> Cancel
+            <Icon name="material-symbols:front-hand-outline-rounded" /> Cancel
           </button>
         </div>
 
         <!-- NOT STARTED: Pattern detail -->
         <div v-else-if="!activeBreathing" class="flex-1 flex flex-col items-center justify-center text-center">
-          <Icon :name="icons.breathing" class="text-5xl mb-4" style="color: var(--primary)" />
+          <Icon name="material-symbols:air" class="text-5xl mb-4" style="color: var(--primary)" />
           <h3 class="text-xl font-bold mb-1" style="color: var(--primary)">{{ selectedPattern?.name }}</h3>
           <p class="text-sm mb-6" style="color: var(--text-muted)">{{ selectedPattern?.helps }}</p>
           <div class="w-full p-4 rounded-xl mb-6" style="background: var(--surface-light)">
@@ -56,9 +56,9 @@
           </div>
 
           <button @click="startBreathingSession"
-            class="px-8 py-3 rounded-xl font-semibold transition-all hover:scale-105"
-            :style="{ background: 'var(--primary)', color: 'var(--background)' }">
-            <Icon :name="icons.start" /> Start
+            class="px-8 py-3 rounded-full font-bold transition-all hover:scale-105 flex items-center justify-center gap-2 shadow-lg"
+            style="background: linear-gradient(135deg, #ff6ea9 0%, #b30065 100%); color: white; border-radius: 9999px; box-shadow: 0 4px 12px rgba(179, 0, 101, 0.3);">
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">play_circle</span> Start Session
           </button>
         </div>
 
@@ -124,12 +124,12 @@
             <button @click="togglePause"
               class="px-6 py-2.5 rounded-xl font-medium transition-all hover:scale-105"
               :style="{ background: 'color-mix(in srgb, var(--warning) 20%, transparent)', color: 'var(--warning)' }">
-              <Icon :name="icons.pause" /> {{ isPaused ? 'Resume' : 'Pause' }}
+              <Icon name="material-symbols:pause-circle-outline-rounded" /> {{ isPaused ? 'Resume' : 'Pause' }}
             </button>
             <button @click="stopBreathing"
               class="px-6 py-2.5 rounded-xl font-medium transition-all hover:scale-105"
               :style="{ background: 'color-mix(in srgb, var(--danger) 20%, transparent)', color: 'var(--danger)' }">
-              <Icon :name="icons.stop" /> Stop
+              <Icon name="material-symbols:stop-circle-outline-rounded" /> Stop
             </button>
           </div>
         </div>
@@ -163,33 +163,33 @@
             <button @click="resetForNewSession"
               class="px-6 py-3 rounded-xl font-semibold transition-all hover:scale-105"
               :style="{ background: 'var(--primary)', color: 'var(--background)' }">
-              <Icon :name="icons.start" /> New Session
+              <Icon name="material-symbols:autoplay-rounded" /> New Session
             </button>
           </div>
         </div>
 
         <!-- PAUSED: Countdown overlay -->
         <div v-else-if="isPaused && resumeCountdown > 0" class="flex-1 flex flex-col items-center justify-center text-center">
-          <Icon :name="icons.breathing" class="text-5xl mb-4" style="color: var(--primary)" />
+          <Icon name="material-symbols:air" class="text-5xl mb-4" style="color: var(--primary)" />
           <h3 class="text-xl font-bold mb-1" style="color: var(--primary)">Paused</h3>
           <p class="text-6xl font-mono font-bold my-6" style="color: var(--primary)">{{ resumeCountdown }}</p>
           <p class="text-sm mb-6" style="color: var(--text-muted)">Resuming automatically...</p>
           <button @click="cancelCountdown(); isPaused = false"
             class="px-6 py-2.5 rounded-xl font-medium transition-all hover:scale-105"
             :style="{ background: 'var(--surface-light)', color: 'var(--text)' }">
-            <Icon :name="icons.play" /> Resume Now
+            <Icon name="material-symbols:play-circle-outline-rounded" /> Resume Now
           </button>
         </div>
 
         <!-- PAUSED: Waiting state -->
         <div v-else class="flex-1 flex flex-col items-center justify-center text-center">
-          <Icon :name="icons.breathing" class="text-5xl mb-4" style="color: var(--primary); opacity: 0.5" />
+          <Icon name="material-symbols:air" class="text-5xl mb-4" style="color: var(--primary); opacity: 0.5" />
           <h3 class="text-xl font-bold mb-2" style="color: var(--primary)">Paused</h3>
           <p class="text-sm mb-6" style="color: var(--text-muted)">Take your time</p>
           <button @click="togglePause"
             class="px-6 py-2.5 rounded-xl font-medium transition-all hover:scale-105"
             :style="{ background: 'var(--primary)', color: 'var(--background)' }">
-            <Icon :name="icons.play" /> Resume
+            <Icon name="material-symbols:play-circle-outline-rounded" /> Resume
           </button>
         </div>
       </div>
@@ -198,19 +198,7 @@
 </template>
 
 <script setup lang="ts">
-import { getIcons } from '~/utils/theme-icons'
 import { useBreathingPanel } from '~/composables/useBreathingPanel'
-
-const currentTheme = ref('yumi')
-const icons = computed(() => getIcons(currentTheme.value))
-
-onMounted(async () => {
-  try {
-    const settings = await $fetch<any>('/api/settings')
-    currentTheme.value = settings?.theme || 'yumi'
-  } catch {}
-  window.addEventListener('theme-change', ((e: CustomEvent) => { currentTheme.value = e.detail.theme }) as EventListener)
-})
 
 function formatDuration(seconds: number) {
   if (!seconds) return '0s'

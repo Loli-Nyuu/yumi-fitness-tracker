@@ -16,32 +16,32 @@ export default defineEventHandler(async (event) => {
     const query = getQuery(event)
     const date = (query.date as string) || today
 
-    // date=all → last 30 days grouped by date with summary
+    // date=all → last 30 days grouped by date with summary AND full entries
     if (date === 'all') {
       const thirtyDaysAgo = new Date()
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
       const cutoff = thirtyDaysAgo.toISOString().split('T')[0]
 
-      const allEntries = db.select().from(fluidLog)
-        .where(eq(fluidLog.date, cutoff)) // drizzle doesn't have gte easily, use raw
-        .all()
-
-      // Actually fetch all recent and filter
-      const recent = db.select().from(fluidLog).orderBy(desc(fluidLog.date)).limit(500).all()
+      // Fetch all recent entries
+      const recent = db.select().from(fluidLog).orderBy(desc(fluidLog.date), desc(fluidLog.createdAt)).limit(500).all()
 
       // Group by date
-      const byDate: Record<string, { totalMl: number; effectiveMl: number; count: number }> = {}
+      const byDate: Record<string, { date: string; totalMl: number; effectiveMl: number; count: number; drinks: any[] }> = {}
+      
       for (const entry of recent) {
         if (entry.date < cutoff) continue
-        if (!byDate[entry.date]) byDate[entry.date] = { totalMl: 0, effectiveMl: 0, count: 0 }
+        
+        if (!byDate[entry.date]) {
+          byDate[entry.date] = { date: entry.date, totalMl: 0, effectiveMl: 0, count: 0, drinks: [] }
+        }
+        
+        byDate[entry.date].drinks.push(entry)
         byDate[entry.date].totalMl += entry.amountMl
         byDate[entry.date].effectiveMl += Math.round(entry.amountMl * (HYDRATION_FACTORS[entry.type] || 0.85))
         byDate[entry.date].count++
       }
 
-      return Object.entries(byDate)
-        .sort((a, b) => b[0].localeCompare(a[0]))
-        .map(([date, summary]) => ({ date, ...summary }))
+      return Object.values(byDate).sort((a, b) => b.date.localeCompare(a.date))
     }
 
     const entries = db.select().from(fluidLog).where(eq(fluidLog.date, date)).all()
