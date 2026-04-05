@@ -102,6 +102,7 @@ export default defineEventHandler(async (event) => {
     const result = db.insert(fluidLog).values({
       date: body.date || today,
       type: body.type,
+      subtype: body.subtype || '',
       amountMl: body.amountMl,
       note: body.note || '',
     }).run()

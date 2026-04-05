@@ -23,6 +23,15 @@
           </div>
         </div>
 
+        <!-- Subtype Selection (Conditional) -->
+        <div v-if="subtypes[selectedType].length > 0" class="mb-6">
+          <label class="text-xs font-bold text-on-surface-variant uppercase mb-2 block">Subtype</label>
+          <select v-model="selectedSubtype" class="w-full bg-surface-container-low p-3 rounded-xl text-on-surface border border-outline-variant/20 focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+            <option value="">Select a flavor...</option>
+            <option v-for="sub in subtypes[selectedType]" :key="sub" :value="sub">{{ sub }}</option>
+          </select>
+        </div>
+
         <!-- Size Selection -->
         <div class="mb-8">
           <label class="text-xs font-bold text-on-surface-variant uppercase mb-2 block">Size</label>
@@ -50,7 +59,17 @@ const props = defineProps<{ isOpen: boolean }>()
 const emit = defineEmits(['close', 'add'])
 
 const selectedType = ref('water')
+const selectedSubtype = ref('')
 const selectedSize = ref({ id: 'medium', ml: 220, label: 'Medium' })
+
+// Subtype mappings
+const subtypes: Record<string, string[]> = {
+  water: [],
+  coffee: ['Espresso', 'Black Coffee', 'Cappuccino', 'Latte'],
+  tea: ['Green Tea', 'Black Tea', 'Chamomile', 'Earl Grey'],
+  juice: ['Orange', 'Green', 'Apple', 'Pineapple', 'Passion Fruit'],
+  soda: ['Coke', 'Sprite', 'Fanta', 'Pepsi', 'Root Beer']
+}
 
 const drinkTypes = [
   { id: 'water', icon: '/images/drinks/water-glass.png' },
@@ -71,7 +90,11 @@ function closeModal() {
 }
 
 function confirmAdd() {
-  emit('add', { type: selectedType.value, amountMl: selectedSize.value.ml })
+  emit('add', { 
+    type: selectedType.value, 
+    subtype: selectedSubtype.value || null,
+    amountMl: selectedSize.value.ml 
+  })
   closeModal()
 }
 </script>

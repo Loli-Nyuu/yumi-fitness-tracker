@@ -27,16 +27,16 @@
         <!-- The Drink Image -->
         <img :src="getDrinkImage(drink.type)" :alt="drink.type" class="w-14 h-14 object-contain drop-shadow-sm" />
 
-        <!-- Cute Tooltip -->
-        <div class="absolute bottom-full mb-2 hidden group-hover:block w-32 bg-surface-container-highest rounded-xl p-3 shadow-xl border border-outline-variant/20 z-10 text-center">
-          <p class="text-xs font-bold text-primary capitalize">{{ drink.type }}</p>
-          <p v-if="drink.subtype" class="text-[10px] text-on-surface-variant capitalize">{{ drink.subtype }}</p>
-          <div class="mt-1 pt-1 border-t border-outline-variant/20 flex justify-between text-[10px] text-on-surface">
+        <!-- Cute Dark Tooltip -->
+        <div class="absolute bottom-full mb-2 hidden group-hover:block w-32 bg-[#1f1c1d]/90 backdrop-blur-md rounded-xl p-3 shadow-xl border border-white/10 z-10 text-center">
+          <p class="text-xs font-bold text-primary-fixed capitalize">{{ drink.type }}</p>
+          <p v-if="drink.subtype" class="text-[10px] text-white/80 capitalize">{{ drink.subtype }}</p>
+          <div class="mt-1 pt-1 border-t border-white/10 flex justify-between text-[10px] text-white">
             <span>{{ drink.amountMl }}ml</span>
-            <span class="font-bold text-tertiary-container">{{ getEffectiveMl(drink) }}ml</span>
+            <span class="font-bold text-tertiary-fixed">{{ getEffectiveMl(drink) }}ml</span>
           </div>
           <!-- Little triangle for tooltip -->
-          <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-surface-container-highest"></div>
+          <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-[#1f1c1d]/90"></div>
         </div>
       </div>
     </div>

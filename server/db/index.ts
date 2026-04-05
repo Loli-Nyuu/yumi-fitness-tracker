@@ -197,6 +197,7 @@ export function useDB() {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         date TEXT NOT NULL,
         type TEXT NOT NULL,
+        subtype TEXT DEFAULT '',
         amount_ml INTEGER NOT NULL,
         note TEXT DEFAULT '',
         created_at TEXT NOT NULL DEFAULT (datetime('now'))
