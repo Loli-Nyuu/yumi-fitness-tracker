@@ -28,22 +28,32 @@
       </div>
     </div>
 
-    <!-- Add Water Button (Quick Add) -->
-    <div class="mt-8 flex justify-center gap-4">
-      <button @click="addDrink('water')" class="bg-tertiary-container text-on-tertiary-container px-6 py-3 rounded-full font-bold flex items-center gap-2 hover:scale-105 transition-transform active:scale-95">
-        <img src="/images/drinks/water-glass.png" class="w-6 h-6" alt="water" />
-        Add Water
+    <!-- Add Drink Button -->
+    <div class="mt-8 flex justify-center">
+      <button @click="isModalOpen = true" class="bg-tertiary-container text-on-tertiary-container px-12 py-3 rounded-full font-bold flex items-center gap-2 hover:scale-105 transition-transform active:scale-95">
+        <span class="material-symbols-outlined">add</span>
+        Add Drink
       </button>
     </div>
+
+    <!-- Add Drink Modal -->
+    <AddDrinkModal 
+      :is-open="isModalOpen" 
+      @close="isModalOpen = false" 
+      @add="handleAddDrink" 
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import AddDrinkModal from './AddDrinkModal.vue'
+
 interface DrinkLog {
   type: string;
   amountMl: number;
 }
 
+const isModalOpen = ref(false)
 const { data: fluidData, refresh: refreshFluids } = useFetch('/api/fluids')
 
 const summary = computed(() => fluidData.value?.summary || { effectiveMl: 0, targetMl: 2500 })
@@ -53,7 +63,6 @@ const targetMl = computed(() => summary.value.targetMl)
 const currentCups = computed(() => Math.floor(effectiveMl.value / 250))
 const totalCups = computed(() => Math.max(8, Math.ceil(targetMl.value / 250)))
 
-// Map API types to our image filenames
 const todaysDrinks = computed(() => {
   return entries.value.map((e: any) => ({
     type: e.type,
@@ -72,10 +81,10 @@ function getDrinkImage(type: string) {
   return map[type] || '/images/drinks/water-glass.png'
 }
 
-async function addDrink(type: string) {
+async function handleAddDrink(drink: { type: string, amountMl: number }) {
   await $fetch('/api/fluids', {
     method: 'POST',
-    body: { type, amountMl: 250 }
+    body: drink
   })
   refreshFluids()
 }
