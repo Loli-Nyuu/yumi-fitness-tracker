@@ -164,10 +164,6 @@
 </template>
 
 <script setup lang="ts">
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-}
-
 const { data: fluidData, refresh: refreshFluids } = useFetch<any>('/api/fluids')
 const summary = computed(() => fluidData.value?.summary || { byType: {}, totalMl: 0, effectiveMl: 0, targetMl: 2500, percentComplete: 0 })
 const entries = computed(() => fluidData.value?.entries || [])
@@ -300,7 +296,7 @@ async function addFluid(ml: number) {
       amountMl: ml
     }
   })
-  await refreshFluids(); await refreshFluidHistory()
+  await refreshFluids(); await refreshAllFluids()
 }
 </script>
 

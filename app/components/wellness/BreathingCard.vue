@@ -52,17 +52,6 @@ const emit = defineEmits<{
   openBreathing: [pattern: any]
 }>()
 
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-}
-
-function formatDuration(seconds: number) {
-  if (!seconds) return '0s'
-  const m = Math.floor(seconds / 60)
-  const s = seconds % 60
-  return m > 0 ? `${m}m ${s}s` : `${s}s`
-}
-
 const { breathingPatterns, openBreathingPanel } = useBreathingPanel()
 
 const showBreathingHistory = ref(false)

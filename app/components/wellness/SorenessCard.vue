@@ -55,10 +55,6 @@
 </template>
 
 <script setup lang="ts">
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-}
-
 const bodyParts = [
   { value: 'glutes', label: 'Glutes', icon: 'accessibility_new' }, 
   { value: 'quads', label: 'Quads', icon: 'hiking' },

@@ -97,9 +97,6 @@
 </template>
 
 <script setup lang="ts">
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-}
 
 const { data: sleepData, refresh: refreshSleep } = useFetch<any>('/api/sleep')
 const sleepHistory = computed(() => { const d = sleepData.value; return !d ? [] : Array.isArray(d) ? d : d.entries || [] })

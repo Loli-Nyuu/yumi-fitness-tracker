@@ -71,7 +71,7 @@
         </div>
 
         <!-- Date -->
-        <p class="text-[10px] text-on-surface-variant/50 mt-2">{{ formatDate(pr.date) }}</p>
+        <p class="text-[10px] text-on-surface-variant/50 mt-2">{{ formatDate(pr.date, { month: 'short', day: 'numeric' }) }}</p>
       </div>
     </div>
   </div>
@@ -100,12 +100,6 @@ function isNewPR(pr: any): boolean {
   const threeDaysAgo = new Date()
   threeDaysAgo.setDate(threeDaysAgo.getDate() - 3)
   return prDate >= threeDaysAgo
-}
-
-function formatDate(dateStr: string): string {
-  if (!dateStr) return ''
-  const d = new Date(dateStr)
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
 function getExerciseIcon(slug: string): string {

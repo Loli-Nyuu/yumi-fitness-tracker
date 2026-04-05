@@ -43,6 +43,4 @@ function statusStyle(status: string) {
   const s = map[status] || { bg: 'var(--surface-light)', color: 'var(--text-muted)' }
   return { background: s.bg, color: s.color }
 }
-
-function formatDate(dateStr: string) { return new Date(dateStr).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) }
 </script>

@@ -96,10 +96,6 @@
 </template>
 
 <script setup lang="ts">
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-}
-
 const todayStr = import.meta.client ? new Date().toISOString().split('T')[0] : '2026-04-02'
 const showNutritionHistory = ref(false)
 const { data: nutritionData, refresh: refreshNutrition } = useFetch<any[]>('/api/nutrition')
