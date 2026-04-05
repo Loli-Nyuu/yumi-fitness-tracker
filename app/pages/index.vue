@@ -19,30 +19,7 @@
           <StrawberryWaterTracker />
         </div>
 
-        <!-- Personal Records -->
-        <div class="md:col-span-2">
-          <PRCard />
-        </div>
-
-        <!-- Weekly Stats -->
-        <div class="md:col-span-1">
-          <WeeklyStatsCard />
-        </div>
-        
-        <!-- Body Stats -->
-        <div class="md:col-span-1">
-          <BodyStatsCard />
-        </div>
-
-        <!-- Sleep -->
-        <div class="md:col-span-1">
-          <SleepCard />
-        </div>
-
-        <!-- Active Goals -->
-        <div class="md:col-span-1">
-          <ActiveGoalsCard />
-        </div>
+        <!-- More magical components will go here... -->
         
       </div>
     </main>
@@ -53,9 +30,4 @@
 import MagicalHeader from '~/components/dashboard/MagicalHeader.vue'
 import TodaysRitual from '~/components/dashboard/TodaysRitual.vue'
 import StrawberryWaterTracker from '~/components/dashboard/StrawberryWaterTracker.vue'
-import PRCard from '~/components/dashboard/PRCard.vue'
-import WeeklyStatsCard from '~/components/dashboard/WeeklyStatsCard.vue'
-import BodyStatsCard from '~/components/dashboard/BodyStatsCard.vue'
-import SleepCard from '~/components/dashboard/SleepCard.vue'
-import ActiveGoalsCard from '~/components/dashboard/ActiveGoalsCard.vue'
 </script>
