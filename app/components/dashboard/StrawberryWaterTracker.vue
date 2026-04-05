@@ -29,8 +29,10 @@
 
         <!-- Cute Dark Tooltip -->
         <div class="absolute bottom-full mb-2 hidden group-hover:block w-32 bg-[#1f1c1d]/90 backdrop-blur-md rounded-xl p-3 shadow-xl border border-white/10 z-10 text-center">
-          <p class="text-xs font-bold text-primary-fixed capitalize">{{ drink.type }}</p>
-          <p v-if="drink.subtype" class="text-[10px] text-white/80 capitalize">{{ drink.subtype }}</p>
+          <p class="text-xs font-bold text-primary-fixed capitalize">
+            {{ drink.type }}
+            <span v-if="drink.subtype" class="text-white/80 font-normal">({{ drink.subtype }})</span>
+          </p>
           <div class="mt-1 pt-1 border-t border-white/10 flex justify-between text-[10px] text-white">
             <span>{{ drink.amountMl }}ml</span>
             <span class="font-bold text-tertiary-fixed">{{ getEffectiveMl(drink) }}ml</span>
@@ -108,7 +110,7 @@ function getDrinkImage(type: string) {
 
 const isModalOpen = ref(false)
 
-async function handleAddDrink(drink: { type: string, amountMl: number }) {
+async function handleAddDrink(drink: { type: string, amountMl: number, subtype?: string }) {
   await $fetch('/api/fluids', {
     method: 'POST',
     body: drink
