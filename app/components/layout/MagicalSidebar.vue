@@ -18,29 +18,22 @@
 
     <!-- Navigation Links -->
     <div class="flex flex-col gap-1 flex-1">
-      <NuxtLink to="/" class="flex items-center gap-3 px-4 py-3 bg-gradient-to-br from-pink-300 to-pink-200 text-white rounded-full shadow-inner transition-transform duration-300 scale-95">
-        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
-        <span class="text-sm font-medium">Dashboard</span>
-      </NuxtLink>
-      <NuxtLink to="/sessions" class="flex items-center gap-3 px-4 py-3 text-pink-400 hover:text-pink-600 hover:translate-x-1 transition-transform duration-300">
-        <span class="material-symbols-outlined">calendar_month</span>
-        <span class="text-sm font-medium">My Sessions</span>
-      </NuxtLink>
-      <NuxtLink to="/live" class="flex items-center gap-3 px-4 py-3 text-pink-400 hover:text-pink-600 hover:translate-x-1 transition-transform duration-300">
-        <span class="material-symbols-outlined">live_tv</span>
-        <span class="text-sm font-medium">Live</span>
-      </NuxtLink>
-      <NuxtLink to="/exercises" class="flex items-center gap-3 px-4 py-3 text-pink-400 hover:text-pink-600 hover:translate-x-1 transition-transform duration-300">
-        <span class="material-symbols-outlined">fitness_center</span>
-        <span class="text-sm font-medium">Exercises</span>
-      </NuxtLink>
-      <NuxtLink to="/body" class="flex items-center gap-3 px-4 py-3 text-pink-400 hover:text-pink-600 hover:translate-x-1 transition-transform duration-300">
-        <span class="material-symbols-outlined">monitoring</span>
-        <span class="text-sm font-medium">Body Stats</span>
-      </NuxtLink>
-      <NuxtLink to="/wellness" class="flex items-center gap-3 px-4 py-3 text-pink-400 hover:text-pink-600 hover:translate-x-1 transition-transform duration-300">
-        <span class="material-symbols-outlined">self_care</span>
-        <span class="text-sm font-medium">Wellness</span>
+      <NuxtLink 
+        v-for="link in links" 
+        :key="link.to"
+        :to="link.to"
+        class="flex items-center gap-3 px-4 py-3 rounded-full transition-all duration-300"
+        :class="isActive(link.to) 
+          ? 'bg-gradient-to-br from-pink-300 to-pink-200 text-white shadow-inner scale-95' 
+          : 'text-pink-400 hover:text-pink-600 hover:translate-x-1'"
+      >
+        <span 
+          class="material-symbols-outlined" 
+          :style="getIconStyle(link.to)"
+        >
+          {{ link.icon }}
+        </span>
+        <span class="text-sm font-medium">{{ link.label }}</span>
       </NuxtLink>
     </div>
 
@@ -53,6 +46,26 @@
 </template>
 
 <script setup lang="ts">
+const route = useRoute()
+
+const links = [
+  { to: '/', label: 'Dashboard', icon: 'dashboard' },
+  { to: '/sessions', label: 'My Sessions', icon: 'calendar_month' },
+  { to: '/live', label: 'Live', icon: 'live_tv' },
+  { to: '/exercises', label: 'Exercises', icon: 'fitness_center' },
+  { to: '/body', label: 'Body Stats', icon: 'monitoring' },
+  { to: '/wellness', label: 'Wellness', icon: 'self_care' },
+  { to: '/goals', label: 'Goals', icon: 'flag' },
+  { to: '/timer', label: 'Timer', icon: 'timer' },
+]
+
+function isActive(path: string) {
+  return route.path === path || (path !== '/' && route.path.startsWith(path))
+}
+
+function getIconStyle(path: string) {
+  return isActive(path) ? { 'font-variation-settings': '"FILL" 1' } : {}
+}
 </script>
 
 <style scoped>
